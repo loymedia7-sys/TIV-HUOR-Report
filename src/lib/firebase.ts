@@ -1,6 +1,15 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAnalytics, isSupported } from 'firebase/analytics';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut,
+  onAuthStateChanged,
+  User
+} from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfigData from '../../firebase-applet-config.json';
 
@@ -32,6 +41,13 @@ if (typeof window !== 'undefined') {
 
 // Initialize Firebase Auth
 export const auth = getAuth(app);
+
+// Check if there was a redirect sign-in result
+if (typeof window !== 'undefined') {
+  getRedirectResult(auth).catch(() => {
+    // Silently ignore redirect errors if not active
+  });
+}
 
 // Initialize Firestore
 export const db = firebaseConfigData.firestoreDatabaseId && firebaseConfigData.firestoreDatabaseId !== '(default)'
@@ -70,8 +86,12 @@ export async function loginWithGoogle(): Promise<User | null> {
       // User dismissed the login popup - not an application fault
       return null;
     }
-    if (error?.code === 'auth/popup-blocked') {
-      console.warn('Google login popup was blocked by the browser. Please allow popups for this site.');
+    if (error?.code === 'auth/popup-blocked' || error?.code === 'auth/unauthorized-domain') {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (redirectErr) {
+        console.warn('Redirect sign-in fallback also encountered:', redirectErr);
+      }
       return null;
     }
     console.warn('Google login issue:', error?.message || error);

@@ -90,6 +90,7 @@ export function subscribeToUserProfile(
         offDays: data.offDays || [1],
         googleSheetWebAppUrl: data.googleSheetWebAppUrl || '',
         autoSyncGoogleSheets: data.autoSyncGoogleSheets || false,
+        language: data.language || 'en',
       });
     }
   }, (error) => {

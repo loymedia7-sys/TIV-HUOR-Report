@@ -27,6 +27,7 @@ export const INITIAL_USER_PROFILE: UserProfile = {
   cloudinaryApiSecret: 'TMe5NO5FXq9H54J7O_XhBNex9AM',
   offDays: [1], // Monday is Holiday
   autoSyncGoogleSheets: false,
+  language: 'en',
 };
 
 /**

@@ -550,17 +550,19 @@ export default function App() {
   }, [currentLanguage]);
 
   const handleToggleLanguage = (newLang: 'en' | 'km') => {
-    const updatedProfile = {
-      ...appState.userProfile,
-      language: newLang,
-    };
-    setAppState((prev) => ({
-      ...prev,
-      userProfile: updatedProfile,
-    }));
-    if (authUser) {
-      saveUserProfileToFirestore(authUser.uid, updatedProfile);
-    }
+    setAppState((prev) => {
+      const updatedProfile: UserProfile = {
+        ...prev.userProfile,
+        language: newLang,
+      };
+      if (authUser) {
+        saveUserProfileToFirestore(authUser.uid, updatedProfile);
+      }
+      return {
+        ...prev,
+        userProfile: updatedProfile,
+      };
+    });
   };
 
   return (

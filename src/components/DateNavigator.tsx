@@ -3,8 +3,7 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Calendar as CalendarIcon, 
-  RefreshCw, 
-  Clock 
+  RefreshCw 
 } from 'lucide-react';
 import { addDaysToDateKey, formatDateKey, getTodayInfo } from '../utils/dateUtils';
 import { Language, TRANSLATIONS, formatKhmerDate } from '../utils/translations';
@@ -18,7 +17,6 @@ interface DateNavigatorProps {
   completedTasksCount: number;
   totalTasksCount: number;
   completionPercentage: number;
-  onOpenTimeCounterModal?: () => void;
   language?: Language;
 }
 
@@ -31,7 +29,6 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
   completedTasksCount,
   totalTasksCount,
   completionPercentage,
-  onOpenTimeCounterModal,
   language = 'en',
 }) => {
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
@@ -95,18 +92,6 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{language === 'km' ? 'ទៅកាន់ថ្ងៃនេះ' : 'Today'}</span>
-            </button>
-          )}
-
-          {/* Quick Check Time Count Button */}
-          {onOpenTimeCounterModal && (
-            <button
-              onClick={onOpenTimeCounterModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 text-xs font-bold transition-all shadow-2xs active:scale-95"
-              title={t.checkCountTime}
-            >
-              <Clock className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{t.checkCountTime}</span>
             </button>
           )}
         </div>

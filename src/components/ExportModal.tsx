@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { X, FileSpreadsheet, FileText, Cloud, Check, Loader2, Sparkles, AlertCircle, CalendarRange } from 'lucide-react';
-import { DayReport, UserProfile, Language } from '../types';
-import { exportReportToExcel, exportWeeklyReportToExcel, exportMonthlyReportToExcel, exportAllReportsToExcel } from '../utils/excelExport';
+import { DayReport, UserProfile, Language, DefaultTimeSlotTemplate } from '../types';
+import {
+  exportReportToExcel,
+  exportWeeklyReportToExcel,
+  exportMonthlyOverviewToExcel,
+  exportMasterExcel
+} from '../utils/excelExport';
 import { exportReportToPDF, exportWeeklyReportToPDF } from '../utils/pdfExport';
 import { syncReportToGoogleSheets } from '../utils/googleSheetsSync';
 import { getWeekDays7, getWeekRangeLabel } from '../utils/dateUtils';
 import { TRANSLATIONS } from '../utils/translations';
+import { INITIAL_DEFAULT_SCHEDULE } from '../utils/storage';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -13,6 +19,7 @@ interface ExportModalProps {
   report: DayReport;
   reportsMap: Record<string, DayReport>;
   userProfile: UserProfile;
+  defaultSchedule?: DefaultTimeSlotTemplate[];
   language?: Language;
 }
 
@@ -22,6 +29,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   report,
   reportsMap,
   userProfile,
+  defaultSchedule = INITIAL_DEFAULT_SCHEDULE,
   language = 'en',
 }) => {
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
@@ -43,7 +51,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const handleExcelExportWeekly = async () => {
     setIsExportingWeeklyExcel(true);
     try {
-      await exportWeeklyReportToExcel(report.date, reportsMap, userProfile);
+      await exportWeeklyReportToExcel(report.date, reportsMap, userProfile, defaultSchedule);
     } catch (err) {
       console.error('Weekly Excel export failed:', err);
     } finally {
@@ -52,11 +60,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   };
 
   const handleExcelExportMonthly = async () => {
-    await exportMonthlyReportToExcel(reportsMap, userProfile, report.date.slice(0, 7));
+    const parts = report.date.split('-');
+    const year = parseInt(parts[0], 10);
+    const monthIndex = parseInt(parts[1], 10) - 1;
+    await exportMonthlyOverviewToExcel(year, monthIndex, reportsMap, userProfile, defaultSchedule);
   };
 
   const handleExcelExportAll = async () => {
-    await exportAllReportsToExcel(Object.values(reportsMap), userProfile);
+    await exportMasterExcel(reportsMap, userProfile);
   };
 
   const handlePDFExport = async () => {
@@ -73,7 +84,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const handleWeeklyPDFExport = async () => {
     setIsExportingWeeklyPDF(true);
     try {
-      await exportWeeklyReportToPDF(report.date, reportsMap, userProfile);
+      await exportWeeklyReportToPDF(report.date, reportsMap, userProfile, defaultSchedule);
     } catch (err) {
       console.error('Weekly PDF export failed:', err);
     } finally {

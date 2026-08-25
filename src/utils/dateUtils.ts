@@ -253,8 +253,54 @@ export function calculateDayWorkHours(tasks: Array<{
 }
 
 /**
- * Formats YYYY-MM-DD to "17 July 2026 / Friday"
+ * Formats date key YYYY-MM-DD into "Date 25 August 2026"
  */
+export function formatDateToScreenshotBanner(dateStr: string): string {
+  if (!dateStr) return 'Date';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return `Date ${dateStr}`;
+  const year = parts[0];
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const monthName = MONTH_NAMES[monthIdx] || '';
+  return `Date ${day} ${monthName} ${year}`;
+}
+
+/**
+ * Converts standard time slot (e.g. "08:00 - 09:00" or "13:00 - 14:00")
+ * to short 2-digit format (e.g. "08-09" or "01-02") matching the required spreadsheet template
+ */
+export function formatTimeSlotToTwoDigitHours(timeSlot: string): string {
+  if (!timeSlot || typeof timeSlot !== 'string') return '';
+  const clean = timeSlot.trim();
+  
+  // If already like "08-09" or "01-02" or "P"
+  if (/^\d{1,2}\s*[-–]\s*\d{1,2}$/.test(clean) || clean.toUpperCase() === 'P') {
+    const parts = clean.split(/[-–]/).map(p => p.trim());
+    if (parts.length === 2) {
+      return `${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+    }
+    return clean;
+  }
+
+  // Parse "08:00 - 09:00" or "13:00 - 14:00"
+  const match = clean.match(/(\d{1,2})[:.]?(\d{2})?\s*(?:-|–|—|to)\s*(\d{1,2})[:.]?(\d{2})?/i);
+  if (match) {
+    let startH = parseInt(match[1], 10);
+    let endH = parseInt(match[3], 10);
+
+    // Convert 24-hour PM to 12-hour 2-digit if >= 13 (e.g. 13 -> 1 -> "01", 17 -> 5 -> "05")
+    const formatHour = (h: number) => {
+      const h12 = h > 12 ? h - 12 : h;
+      return String(h12).padStart(2, '0');
+    };
+
+    return `${formatHour(startH)}-${formatHour(endH)}`;
+  }
+
+  return clean;
+}
+
 export function formatFullDateHeader(dateStr: string): {
   formattedText: string;
   dayNumber: number;

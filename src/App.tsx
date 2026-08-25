@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppState, DayReport, DefaultTimeSlotTemplate, UserProfile, AuthUser, TaskScope, ScheduleTask, WorkSession } from './types';
+import { AppState, DayReport, DefaultTimeSlotTemplate, UserProfile, AuthUser, TaskScope, ScheduleTask, WorkSession, TaskStatus } from './types';
 import {
   loadAppState,
   saveAppState,
@@ -42,7 +42,7 @@ import { ExportModal } from './components/ExportModal';
 import { SettingsModal } from './components/SettingsModal';
 import { InstallPromptModal } from './components/InstallPromptModal';
 import { ImportSheetModal } from './components/ImportSheetModal';
-import { DayTimeCounterModal } from './components/DayTimeCounterModal';
+import { PermissionModal } from './components/PermissionModal';
 import { usePWAInstall } from './hooks/usePWAInstall';
 import { updatePwaManifestAndIcons } from './utils/pwaIconUpdater';
 import confetti from 'canvas-confetti';
@@ -73,7 +73,7 @@ export default function App() {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isTimeCounterModalOpen, setIsTimeCounterModalOpen] = useState(false);
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
 
   // Subscribe to Firebase Auth changes
   useEffect(() => {
@@ -138,76 +138,28 @@ export default function App() {
   // Save to LocalStorage whenever appState changes
   useEffect(() => {
     saveAppState(appState);
-    if (appState.userProfile.companyLogoUrl) {
-      updatePwaManifestAndIcons(
-        appState.userProfile.companyLogoUrl,
-        appState.userProfile.companyName
-      );
-    }
   }, [appState]);
 
-  // Ensure current day's report exists
+  // Set Company name / Logo in PWA manifest & document title on boot
   useEffect(() => {
-    if (!appState.reports[selectedDate]) {
-      const newReport = createNewDayReport(selectedDate, appState.defaultSchedule);
-      setAppState((prev) => ({
-        ...prev,
-        reports: {
-          ...prev.reports,
-          [selectedDate]: newReport,
-        },
-      }));
-
-      if (authUser) {
-        saveDayReportToFirestore(authUser.uid, newReport);
-      }
+    if (appState.userProfile?.companyName) {
+      document.title = `${appState.userProfile.companyName} - Daily Work Report`;
     }
-  }, [selectedDate, appState.defaultSchedule, authUser]);
+  }, [appState.userProfile?.companyName]);
 
-  const currentReport: DayReport = useMemo(() => {
-    return (
-      appState.reports[selectedDate] ||
-      createNewDayReport(selectedDate, appState.defaultSchedule)
-    );
-  }, [appState.reports, selectedDate, appState.defaultSchedule]);
+  // Get or initialize DayReport for selectedDate
+  const currentReport = useMemo(() => {
+    if (appState.reports[selectedDate]) {
+      return appState.reports[selectedDate];
+    }
+    return createNewDayReport(selectedDate, appState.defaultSchedule, appState.userProfile);
+  }, [appState.reports, selectedDate, appState.defaultSchedule, appState.userProfile]);
 
   const dateHeaderInfo = useMemo(() => {
     return formatFullDateHeader(selectedDate);
   }, [selectedDate]);
 
-  // Calculate day completion percentage
-  const { completedTasksCount, totalTasksCount, completionPercentage } = useMemo(() => {
-    if (!currentReport.tasks || currentReport.tasks.length === 0) {
-      return { completedTasksCount: 0, totalTasksCount: 0, completionPercentage: 0 };
-    }
-    const total = currentReport.tasks.length;
-    const completed = currentReport.tasks.filter((t) => t.isCompleted).length;
-    const pct = Math.round((completed / total) * 100);
-    return { completedTasksCount: completed, totalTasksCount: total, completionPercentage: pct };
-  }, [currentReport.tasks]);
-
-  // Auth Handlers
-  const handleGoogleLogin = async () => {
-    try {
-      setIsSyncing(true);
-      await loginWithGoogle();
-    } catch {
-      // Handled safely within loginWithGoogle
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setAuthUser(null);
-    } catch {
-      // Handled safely
-    }
-  };
-
-  // Helper to update current day report
+  // Helpers to update day report
   const updateCurrentReport = (updater: (prevReport: DayReport) => DayReport) => {
     const updated = updater(currentReport);
     setAppState((prev) => ({
@@ -223,7 +175,97 @@ export default function App() {
     }
   };
 
-  // Tasks actions
+  // ==========================================
+  // Attendance: Check-In & Check-Out Handlers
+  // ==========================================
+  const handleCheckIn = (customTime?: string) => {
+    const nowTimeStr = customTime || getCurrentTimeString();
+    const nowTimestamp = Date.now();
+
+    updateCurrentReport((rep) => ({
+      ...rep,
+      isCheckedIn: true,
+      currentCheckInTime: nowTimeStr,
+      currentCheckInTimestamp: nowTimestamp,
+      isAbsent: false,
+    }));
+  };
+
+  const handleCheckOut = (customTime?: string, notes?: string) => {
+    const nowTimeStr = customTime || getCurrentTimeString();
+    const inTime = currentReport.currentCheckInTime || '08:00';
+    const durationMins = calculateSessionMinutes(inTime, nowTimeStr);
+
+    const newSession: WorkSession = {
+      id: `session_${Date.now()}`,
+      checkInTime: inTime,
+      checkInTimestamp: currentReport.currentCheckInTimestamp || Date.now(),
+      checkOutTime: nowTimeStr,
+      checkOutTimestamp: Date.now(),
+      durationMinutes: durationMins,
+      notes: notes || undefined,
+    };
+
+    const existingSessions = currentReport.workSessions || [];
+    const updatedSessions = [...existingSessions, newSession];
+    const totalMinutes = updatedSessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
+
+    updateCurrentReport((rep) => ({
+      ...rep,
+      isCheckedIn: false,
+      currentCheckInTime: undefined,
+      currentCheckInTimestamp: undefined,
+      workSessions: updatedSessions,
+      totalWorkedMinutes: totalMinutes,
+    }));
+  };
+
+  const handleDeleteWorkSession = (sessionId: string) => {
+    const existingSessions = currentReport.workSessions || [];
+    const filtered = existingSessions.filter((s) => s.id !== sessionId);
+    const totalMinutes = filtered.reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
+
+    updateCurrentReport((rep) => ({
+      ...rep,
+      workSessions: filtered,
+      totalWorkedMinutes: totalMinutes,
+    }));
+  };
+
+  // ==========================================
+  // Permission (P) / Absent Handlers
+  // ==========================================
+  const handleSavePermission = (permData: {
+    isPermission: boolean;
+    permissionType: string;
+    permissionReason: string;
+    isAbsent?: boolean;
+    absentReason?: string;
+  }) => {
+    updateCurrentReport((rep) => ({
+      ...rep,
+      isPermission: permData.isPermission,
+      permissionType: permData.permissionType,
+      permissionReason: permData.permissionReason,
+      isAbsent: permData.isAbsent ?? false,
+      absentReason: permData.absentReason ?? permData.permissionReason,
+    }));
+  };
+
+  const handleRemovePermission = () => {
+    updateCurrentReport((rep) => ({
+      ...rep,
+      isPermission: false,
+      permissionType: undefined,
+      permissionReason: undefined,
+      isAbsent: false,
+      absentReason: undefined,
+    }));
+  };
+
+  // ==========================================
+  // Tasks actions & Check (✓) / Cross (✗)
+  // ==========================================
   const handleToggleTask = (taskId: string) => {
     const time = getCurrentTimeString();
     updateCurrentReport((rep) => ({
@@ -234,6 +276,7 @@ export default function App() {
           return {
             ...t,
             isCompleted: nextCompleted,
+            status: nextCompleted ? 'completed' : 'pending',
             completedAt: nextCompleted ? (t.completedAt || time) : undefined,
           };
         }
@@ -242,10 +285,43 @@ export default function App() {
     }));
   };
 
+  const handleSetTaskStatus = (taskId: string, status: TaskStatus) => {
+    const time = getCurrentTimeString();
+    updateCurrentReport((rep) => ({
+      ...rep,
+      tasks: rep.tasks.map((t) => {
+        if (t.id === taskId) {
+          const isDone = status === 'completed';
+          return {
+            ...t,
+            status,
+            isCompleted: isDone,
+            completedAt: isDone ? (t.completedAt || time) : undefined,
+          };
+        }
+        return t;
+      }),
+    }));
+  };
+
+  const handleUpdateCrossReason = (taskId: string, crossReason: string) => {
+    updateCurrentReport((rep) => ({
+      ...rep,
+      tasks: rep.tasks.map((t) => (t.id === taskId ? { ...t, crossReason, status: crossReason ? 'crossed' : t.status } : t)),
+    }));
+  };
+
+  const handleUpdateOther = (taskId: string, other: string) => {
+    updateCurrentReport((rep) => ({
+      ...rep,
+      tasks: rep.tasks.map((t) => (t.id === taskId ? { ...t, other, notes: other } : t)),
+    }));
+  };
+
   const handleUpdateNotes = (taskId: string, notes: string) => {
     updateCurrentReport((rep) => ({
       ...rep,
-      tasks: rep.tasks.map((t) => (t.id === taskId ? { ...t, notes } : t)),
+      tasks: rep.tasks.map((t) => (t.id === taskId ? { ...t, notes, other: notes } : t)),
     }));
   };
 
@@ -267,7 +343,8 @@ export default function App() {
     timeSlot: string, 
     taskName: string, 
     scheduleType: 'Schedule' | 'Over Time' = 'Schedule',
-    scope: TaskScope = 'today'
+    scope: TaskScope = 'today',
+    daysOfWeek?: number[]
   ) => {
     const newTask: ScheduleTask = {
       id: `task_${Date.now()}`,
@@ -275,6 +352,7 @@ export default function App() {
       taskName,
       scheduleType,
       isCompleted: false,
+      status: 'pending',
     };
 
     updateCurrentReport((rep) => ({
@@ -291,6 +369,7 @@ export default function App() {
         scheduleType,
         isOvertime: isOt,
         applicableScope: scope,
+        daysOfWeek: daysOfWeek,
       };
 
       const updatedSchedule = [...appState.defaultSchedule, newTemplate];
@@ -335,6 +414,7 @@ export default function App() {
           ? rep.tasks.map((t) => ({
               ...t,
               isCompleted: true,
+              status: 'completed',
               completedAt: t.completedAt || time,
             }))
           : rep.tasks,
@@ -349,6 +429,7 @@ export default function App() {
       taskName: item.taskName,
       scheduleType: item.scheduleType,
       isCompleted: false,
+      status: 'pending',
     }));
 
     updateCurrentReport((rep) => ({
@@ -366,6 +447,7 @@ export default function App() {
       tasks: rep.tasks.map((t) => ({
         ...t,
         isCompleted: true,
+        status: 'completed',
         completedAt: t.completedAt || time,
       })),
     }));
@@ -374,178 +456,94 @@ export default function App() {
   const handleResetTasks = () => {
     updateCurrentReport((rep) => ({
       ...rep,
+      isDoneForToday: false,
+      doneAt: undefined,
       tasks: rep.tasks.map((t) => ({
         ...t,
         isCompleted: false,
+        status: 'pending',
         completedAt: undefined,
+        crossReason: undefined,
       })),
     }));
   };
 
-  // --- CHECK-IN / CHECK-OUT HANDLERS ---
-  const handleCheckIn = (customTime?: string) => {
-    const timeStr = customTime || getFormattedTimeString();
-    const now = Date.now();
+  // Google Login & Logout
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      console.error('Google Sign-in failed:', err);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setAuthUser(null);
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
+  // Template Save
+  const handleSaveScheduleTemplate = (newSchedule: DefaultTimeSlotTemplate[]) => {
+    setAppState((prev) => ({
+      ...prev,
+      defaultSchedule: newSchedule,
+    }));
+
+    if (authUser) {
+      saveTemplatesToFirestore(authUser.uid, newSchedule);
+    }
+  };
+
+  // Profile Save
+  const handleSaveProfile = (newProfile: UserProfile) => {
+    setAppState((prev) => ({
+      ...prev,
+      userProfile: newProfile,
+    }));
+
+    if (newProfile.companyLogoUrl) {
+      updatePwaManifestAndIcons(newProfile.companyLogoUrl, newProfile.companyName);
+    }
+
+    if (authUser) {
+      saveUserProfileToFirestore(authUser.uid, newProfile);
+    }
+  };
+
+  // Import Tasks
+  const handleImportTasks = (importedTasks: ScheduleTask[]) => {
     updateCurrentReport((rep) => ({
       ...rep,
-      isCheckedIn: true,
-      currentCheckInTime: timeStr,
-      currentCheckInTimestamp: now,
+      tasks: [...rep.tasks, ...importedTasks],
     }));
   };
 
-  const handleCheckOut = (customTime?: string, notes?: string) => {
-    const timeStr = customTime || getFormattedTimeString();
-    const now = Date.now();
-    updateCurrentReport((rep) => {
-      const inTime = rep.currentCheckInTime || getFormattedTimeString();
-      const inTs = rep.currentCheckInTimestamp || now;
-      const durationMins = calculateSessionMinutes(inTime, timeStr);
-
-      const newSession: WorkSession = {
-        id: `sess_${Date.now()}`,
-        checkInTime: inTime,
-        checkInTimestamp: inTs,
-        checkOutTime: timeStr,
-        checkOutTimestamp: now,
-        durationMinutes: durationMins,
-        type: 'regular',
-        notes: notes || '',
-      };
-
-      const prevSessions = rep.workSessions || [];
-      const updatedSessions = [...prevSessions, newSession];
-      const totalMins = updatedSessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
-
-      return {
-        ...rep,
-        isCheckedIn: false,
-        currentCheckInTime: undefined,
-        currentCheckInTimestamp: undefined,
-        workSessions: updatedSessions,
-        totalWorkedMinutes: totalMins,
-      };
-    });
-  };
-
-  const handleDeleteWorkSession = (sessionId: string) => {
-    updateCurrentReport((rep) => {
-      const updatedSessions = (rep.workSessions || []).filter((s) => s.id !== sessionId);
-      const totalMins = updatedSessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
-      return {
-        ...rep,
-        workSessions: updatedSessions,
-        totalWorkedMinutes: totalMins,
-      };
-    });
-  };
-
-  // --- IMPORT FROM SHEET HANDLER ---
-  const handleImportTasks = (
-    importedTasks: Array<{
-      timeSlot: string;
-      taskName: string;
-      scheduleType?: string;
-      notes?: string;
-      isCompleted?: boolean;
-    }>,
-    mode: 'replace' | 'append' | 'template'
-  ) => {
-    if (mode === 'template') {
-      const newTemplates: DefaultTimeSlotTemplate[] = importedTasks.map((t, idx) => {
-        const isOt = (t.scheduleType || '').toLowerCase().includes('over') || (t.scheduleType || '').toLowerCase().includes('ot');
-        return {
-          id: `tpl_imp_${Date.now()}_${idx}`,
-          timeSlot: t.timeSlot,
-          taskName: t.taskName,
-          scheduleType: isOt ? 'Over Time' : 'Schedule',
-          isOvertime: isOt,
-          applicableScope: 'all',
-        };
-      });
-
-      setAppState((prev) => ({
-        ...prev,
-        defaultSchedule: newTemplates,
-      }));
-
-      if (authUser) {
-        saveTemplatesToFirestore(authUser.uid, newTemplates);
-      }
-      return;
-    }
-
-    const newTasks: ScheduleTask[] = importedTasks.map((t, idx) => ({
-      id: `task_imp_${Date.now()}_${idx}`,
-      timeSlot: t.timeSlot,
-      taskName: t.taskName,
-      scheduleType: (t.scheduleType || '').toLowerCase().includes('over') ? 'Over Time' : 'Schedule',
-      notes: t.notes || '',
-      isCompleted: !!t.isCompleted,
-    }));
-
-    if (mode === 'replace') {
-      updateCurrentReport((rep) => ({
-        ...rep,
-        isHoliday: false,
-        tasks: newTasks,
-      }));
-    } else {
-      updateCurrentReport((rep) => ({
-        ...rep,
-        isHoliday: false,
-        tasks: [...rep.tasks, ...newTasks],
-      }));
-    }
-  };
-
-  const handleSaveScheduleTemplate = (updatedSchedule: DefaultTimeSlotTemplate[]) => {
-    setAppState((prev) => ({
-      ...prev,
-      defaultSchedule: updatedSchedule,
-    }));
-
-    if (authUser) {
-      saveTemplatesToFirestore(authUser.uid, updatedSchedule);
-    }
-  };
-
-  const handleSaveProfile = (updatedProfile: UserProfile) => {
-    setAppState((prev) => ({
-      ...prev,
-      userProfile: updatedProfile,
-    }));
-
-    if (authUser) {
-      saveUserProfileToFirestore(authUser.uid, updatedProfile);
-    }
-  };
-
-  const handleRestoreState = (restoredState: AppState) => {
-    setAppState(restoredState);
-    if (authUser) {
-      saveUserProfileToFirestore(authUser.uid, restoredState.userProfile);
-      saveTemplatesToFirestore(authUser.uid, restoredState.defaultSchedule);
-      for (const dateKey of Object.keys(restoredState.reports)) {
-        saveDayReportToFirestore(authUser.uid, restoredState.reports[dateKey]);
-      }
-    }
+  // Restore State & Reset Data
+  const handleRestoreState = (restored: AppState) => {
+    setAppState(restored);
+    saveAppState(restored);
   };
 
   const handleResetAllData = async () => {
-    const freshState = resetAppState();
-    setAppState(freshState);
-    const today = formatDateKey(new Date());
-    setSelectedDate(today);
-
+    const fresh = getFreshInitialState();
     if (authUser) {
-      setIsSyncing(true);
-      await resetAllFirestoreUserData(authUser.uid, freshState);
-      setIsSyncing(false);
+      await resetAllFirestoreUserData(authUser.uid, fresh);
     }
+    resetAppState();
+    setAppState(fresh);
   };
 
-  const currentLanguage = appState.userProfile.language || 'en';
+  // Completion calculation for header/nav
+  const completedTasksCount = currentReport.tasks.filter((t) => t.isCompleted || t.status === 'completed').length;
+  const totalTasksCount = currentReport.tasks.length;
+  const completionPercentage =
+    totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
+
+  const currentLanguage = appState.userProfile?.language || 'en';
 
   useEffect(() => {
     document.documentElement.lang = currentLanguage;
@@ -580,7 +578,6 @@ export default function App() {
         isSyncing={isSyncing}
         onOpenExportModal={() => setIsExportModalOpen(true)}
         onOpenImportModal={() => setIsImportModalOpen(true)}
-        onOpenTimeCounterModal={() => setIsTimeCounterModalOpen(true)}
         onOpenTemplateModal={() => setIsTemplateModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         onOpenInstallModal={triggerInstall}
@@ -606,7 +603,6 @@ export default function App() {
               completedTasksCount={completedTasksCount}
               totalTasksCount={totalTasksCount}
               completionPercentage={completionPercentage}
-              onOpenTimeCounterModal={() => setIsTimeCounterModalOpen(true)}
               language={currentLanguage}
             />
 
@@ -619,6 +615,8 @@ export default function App() {
             ) : (
               <Checklist
                 tasks={currentReport.tasks}
+                report={currentReport}
+                selectedDate={selectedDate}
                 isDoneForToday={currentReport.isDoneForToday}
                 doneAt={currentReport.doneAt}
                 workSessions={currentReport.workSessions}
@@ -629,7 +627,11 @@ export default function App() {
                 onCheckIn={handleCheckIn}
                 onCheckOut={handleCheckOut}
                 onDeleteWorkSession={handleDeleteWorkSession}
+                onOpenPermissionModal={() => setIsPermissionModalOpen(true)}
                 onToggleTask={handleToggleTask}
+                onSetTaskStatus={handleSetTaskStatus}
+                onUpdateCrossReason={handleUpdateCrossReason}
+                onUpdateOther={handleUpdateOther}
                 onUpdateNotes={handleUpdateNotes}
                 onUpdateTaskName={handleUpdateTaskName}
                 onUpdateScheduleType={handleUpdateScheduleType}
@@ -638,7 +640,6 @@ export default function App() {
                 onMarkAllComplete={handleMarkAllComplete}
                 onResetTasks={handleResetTasks}
                 onToggleDoneForToday={handleToggleDoneForToday}
-                onOpenTimeCounterModal={() => setIsTimeCounterModalOpen(true)}
                 language={currentLanguage}
               />
             )}
@@ -657,7 +658,6 @@ export default function App() {
               completedTasksCount={completedTasksCount}
               totalTasksCount={totalTasksCount}
               completionPercentage={completionPercentage}
-              onOpenTimeCounterModal={() => setIsTimeCounterModalOpen(true)}
               language={currentLanguage}
             />
 
@@ -679,6 +679,16 @@ export default function App() {
         report={currentReport}
         reportsMap={appState.reports}
         userProfile={appState.userProfile}
+        defaultSchedule={appState.defaultSchedule}
+        language={currentLanguage}
+      />
+
+      <PermissionModal
+        isOpen={isPermissionModalOpen}
+        onClose={() => setIsPermissionModalOpen(false)}
+        report={currentReport}
+        onSavePermission={handleSavePermission}
+        onRemovePermission={handleRemovePermission}
         language={currentLanguage}
       />
 
@@ -710,16 +720,6 @@ export default function App() {
         userProfile={appState.userProfile}
         language={currentLanguage}
         onImportTasks={handleImportTasks}
-      />
-
-      <DayTimeCounterModal
-        isOpen={isTimeCounterModalOpen}
-        onClose={() => setIsTimeCounterModalOpen(false)}
-        tasks={currentReport.tasks}
-        dateKey={selectedDate}
-        formattedDateText={dateHeaderInfo.formattedText}
-        dayOfWeek={dateHeaderInfo.dayOfWeek}
-        language={currentLanguage}
       />
 
       <InstallPromptModal

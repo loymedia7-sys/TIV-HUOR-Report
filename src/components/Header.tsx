@@ -27,7 +27,6 @@ interface HeaderProps {
   onLogout: () => void;
   isSyncing?: boolean;
   onOpenExportModal: () => void;
-  onOpenTimeCounterModal?: () => void;
   onOpenTemplateModal: () => void;
   onOpenSettingsModal: () => void;
   onOpenInstallModal: () => void;
@@ -48,7 +47,6 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   isSyncing = false,
   onOpenExportModal,
-  onOpenTimeCounterModal,
   onOpenTemplateModal,
   onOpenSettingsModal,
   onOpenInstallModal,

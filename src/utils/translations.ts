@@ -39,7 +39,7 @@ export interface Translations {
   friShort: string;
   satShort: string;
 
-  // Check-In / Check-Out
+  // Check-In / Check-Out & Attendance
   checkIn: string;
   checkOut: string;
   checkedIn: string;
@@ -56,8 +56,23 @@ export interface Translations {
   cancel: string;
   deleteSession: string;
   duration: string;
+  notCheckedInStatus: string;
+  notCheckedInAbsentHint: string;
+  putPermissionBtn: string;
+  permissionActiveBadge: string;
+  permissionTitle: string;
+  permissionSubtitle: string;
+  permissionTypeLabel: string;
+  permissionReasonLabel: string;
+  permissionReasonPlaceholder: string;
+  savePermission: string;
+  removePermission: string;
+  sickLeave: string;
+  personalLeave: string;
+  familyEmergency: string;
+  unexcusedAbsent: string;
 
-  // Checklist Actions
+  // Checklist & Task Completion / Cross Logic
   addSlotOt: string;
   markAllDone: string;
   resetProgress: string;
@@ -68,6 +83,18 @@ export interface Translations {
   doneForTodayLoggedOn: string;
   noTasksToday: string;
   noTasksHint: string;
+  taskCompletedCheck: string;
+  taskCrossedIncomplete: string;
+  taskPending: string;
+  reasonForCross: string;
+  reasonForCrossPlaceholder: string;
+  otherRemarks: string;
+  otherRemarksPlaceholder: string;
+  quickReasonMeeting: string;
+  quickReasonSystem: string;
+  quickReasonClient: string;
+  quickReasonUrgent: string;
+  quickReasonSick: string;
 
   // Add Task Form
   addTimeSlotTitle: string;
@@ -259,7 +286,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     friShort: 'Fri',
     satShort: 'Sat',
 
-    // Check-In / Check-Out
+    // Check-In / Check-Out & Attendance
     checkIn: 'Check In',
     checkOut: 'Check Out',
     checkedIn: 'Checked In',
@@ -276,8 +303,23 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     cancel: 'Cancel',
     deleteSession: 'Delete Session',
     duration: 'Duration',
+    notCheckedInStatus: 'Not Checked In (Absent)',
+    notCheckedInAbsentHint: 'You have not checked in for this date yet. If on leave, you can submit permission.',
+    putPermissionBtn: 'Permission (P) / Absent',
+    permissionActiveBadge: 'Permission (P) Active',
+    permissionTitle: 'Day Permission / Attendance Request',
+    permissionSubtitle: 'Record sick leave, personal permission (P), or absence reason for this day',
+    permissionTypeLabel: 'Permission Type',
+    permissionReasonLabel: 'Reason (e.g. sick can go need to rest and sleep):',
+    permissionReasonPlaceholder: 'Write reason for permission / absence...',
+    savePermission: 'Save Permission',
+    removePermission: 'Remove Permission (Return to Work)',
+    sickLeave: 'P - Sick Leave',
+    personalLeave: 'P - Personal Leave',
+    familyEmergency: 'P - Family Emergency',
+    unexcusedAbsent: 'Absent (No Check-In)',
 
-    // Checklist Actions
+    // Checklist & Task Completion / Cross Logic
     addSlotOt: 'Add Slot (OT)',
     markAllDone: 'Mark All Complete',
     resetProgress: 'Reset',
@@ -288,6 +330,18 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     doneForTodayLoggedOn: 'Completed and logged on',
     noTasksToday: 'No time-slot tasks created for today.',
     noTasksHint: 'Click "Add Slot (OT)" above to get started.',
+    taskCompletedCheck: 'Completed (✓)',
+    taskCrossedIncomplete: 'Cross / Incomplete (✗)',
+    taskPending: 'Pending',
+    reasonForCross: 'Reason for Cross / Delay:',
+    reasonForCrossPlaceholder: 'Why is this task crossed / delayed? (e.g. meeting, waiting for client...)',
+    otherRemarks: 'Other Remarks:',
+    otherRemarksPlaceholder: 'Additional notes or remarks...',
+    quickReasonMeeting: 'Internal Meeting',
+    quickReasonSystem: 'System / Internet Issue',
+    quickReasonClient: 'Awaiting Client Assets',
+    quickReasonUrgent: 'Urgent Task Replaced',
+    quickReasonSick: 'Sick / Health Issue',
 
     // Add Task Form
     addTimeSlotTitle: 'Add Time Slot & Task (Regular or Over Time)',
@@ -353,8 +407,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     weekExcelBtn: '1-Week Excel',
     weekPdfBtn: '1-Week PDF',
     excelWorkbooksTitle: 'Excel Workbooks (.xlsx)',
-    excelWorkbooksDesc: 'Professional spreadsheet with time slots, activities, status & timestamps',
-    dayBtn: 'Day',
+    excelWorkbooksDesc: 'Professional spreadsheet matching official template with checking (✓/✗) and reasons',
+    dayBtn: 'Day Excel',
     monthlyOverviewBtn: 'Monthly Overview',
     masterAllLogsBtn: 'Master (All Logs)',
     singleDayPdfTitle: 'Single Day PDF (.pdf)',
@@ -430,12 +484,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     // Preset Activity Names
     presetChatFb: 'Reply chat customer on Facebook page',
-    presetCheckPlatform: 'Check platform',
+    presetCheckPlatform: 'Check Platform(all)view & Engagement',
     presetVideoIdeas: 'Find ideas for create video',
-    presetDesignPoster: 'Design poster',
+    presetDesignPoster: 'Design(Video or poster)',
     presetEditVideo: 'Edit video',
-    presetPostPage: 'Post page',
-    presetFindElement: 'Find element for design',
+    presetPostPage: 'Post on Platform',
+    presetFindElement: 'Sreach Elements',
     presetTakeVideo: 'Take video',
   },
 
@@ -478,7 +532,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     friShort: 'សុ',
     satShort: 'ស',
 
-    // Check-In / Check-Out
+    // Check-In / Check-Out & Attendance
     checkIn: 'ចុះឈ្មោះចូល (Check-In)',
     checkOut: 'ចុះឈ្មោះចេញ (Check-Out)',
     checkedIn: 'បានចូលធ្វើការ',
@@ -495,8 +549,23 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     cancel: 'បោះបង់',
     deleteSession: 'លុបវេនការងារ',
     duration: 'រយៈពេល',
+    notCheckedInStatus: 'មិនទាន់បាន Check-in (អវត្តមាន)',
+    notCheckedInAbsentHint: 'អ្នកមិនទាន់បានចុះឈ្មោះចូលធ្វើការសម្រាប់ថ្ងៃនេះនៅឡើយទេ។ ប្រសិនបើមានច្បាប់ អ្នកអាចស្នើសុំច្បាប់ (P) បាន។',
+    putPermissionBtn: 'ដាក់ច្បាប់ (P) / ឈប់សម្រាក',
+    permissionActiveBadge: 'បានដាក់ច្បាប់ (P) រួចរាល់',
+    permissionTitle: 'កំណត់ច្បាប់សម្រាក / ហេតុផលអវត្តមាន',
+    permissionSubtitle: 'កត់ត្រាការសុំច្បាប់ឈឺ ច្បាប់ផ្ទាល់ខ្លួន (P) ឬហេតុផលអវត្តមានសម្រាប់ថ្ងៃនេះ',
+    permissionTypeLabel: 'ប្រភេទច្បាប់ / អវត្តមាន',
+    permissionReasonLabel: 'ហេតុផល (ឧ. sick can go need to rest and sleep)៖',
+    permissionReasonPlaceholder: 'សរសេរហេតុផលនៃការសុំច្បាប់ ឬអវត្តមាន...',
+    savePermission: 'រក្សាទុកច្បាប់សម្រាក',
+    removePermission: 'លុបច្បាប់ (ចូលធ្វើការធម្មតាវិញ)',
+    sickLeave: 'P - ច្បាប់ឈឺ (Sick Leave)',
+    personalLeave: 'P - ច្បាប់ផ្ទាល់ខ្លួន (Personal Leave)',
+    familyEmergency: 'P - ធុរៈបន្ទាន់ក្នុងគ្រួសារ',
+    unexcusedAbsent: 'អវត្តមានមិនបាន Check-In',
 
-    // Checklist Actions
+    // Checklist & Task Completion / Cross Logic
     addSlotOt: 'បន្ថែមម៉ោង/OT',
     markAllDone: 'សម្គាល់រួចរាល់ទាំងអស់',
     resetProgress: 'កំណត់ឡើងវិញ',
@@ -507,6 +576,18 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     doneForTodayLoggedOn: 'បានបញ្ចប់ និងកត់ត្រានៅ',
     noTasksToday: 'មិនទាន់មានការងារក្នុងចន្លោះពេលសម្រាប់ថ្ងៃនេះនៅឡើយទេ។',
     noTasksHint: 'ចុច «បន្ថែមម៉ោង/OT» ខាងលើដើម្បីចាប់ផ្ដើម។',
+    taskCompletedCheck: 'បានសម្រេច (✓)',
+    taskCrossedIncomplete: 'មិនទាន់សម្រេច / Cross (✗)',
+    taskPending: 'មិនទាន់ធីក',
+    reasonForCross: 'ហេតុផលដែលមិនបានធ្វើ ឬ Cross (✗)៖',
+    reasonForCrossPlaceholder: 'ហេតុអ្វីបានជាការងារនេះមិនទាន់បានធ្វើ ឬពន្យារពេល? (ឧ. ជាប់ប្រជុំ, រង់ចាំភ្ញៀវ...)',
+    otherRemarks: 'កំណត់ចំណាំផ្សេងៗ (Other)៖',
+    otherRemarksPlaceholder: 'ព័ត៌មានលម្អិតបន្ថែម ឬកំណត់ចំណាំ...',
+    quickReasonMeeting: 'ជាប់ប្រជុំផ្ទៃក្នុង',
+    quickReasonSystem: 'បញ្ហាប្រព័ន្ធ / អ៊ីនធឺណិត',
+    quickReasonClient: 'រង់ចាំឯកសារពីភ្ញៀវ',
+    quickReasonUrgent: 'ប្តូរធ្វើការងារបន្ទាន់ផ្សេង',
+    quickReasonSick: 'មិនស្រួលខ្លួន / ឈឺ',
 
     // Add Task Form
     addTimeSlotTitle: 'បន្ថែមចន្លោះពេល និងភារកិច្ច (ម៉ោងធម្មតា ឬ ថែមម៉ោង)',
@@ -572,8 +653,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     weekExcelBtn: 'Excel ១សប្តាហ៍',
     weekPdfBtn: 'PDF ១សប្តាហ៍',
     excelWorkbooksTitle: 'សៀវភៅការងារ Excel (.xlsx)',
-    excelWorkbooksDesc: 'ទាញយកជាឯកសារ Excel មានតារាងចន្លោះពេល ភារកិច្ច និងកំណត់ចំណាំ',
-    dayBtn: 'ថ្ងៃនេះ',
+    excelWorkbooksDesc: 'ឯកសារ Excel តាមទម្រង់ស្តង់ដារ មាន checking (✓/✗) និងហេតុផល Reason',
+    dayBtn: 'Excel ថ្ងៃនេះ',
     monthlyOverviewBtn: 'សង្ខេបប្រចាំខែ',
     masterAllLogsBtn: 'ប្រវត្តិទាំងអស់',
     singleDayPdfTitle: 'ឯកសារ PDF ប្រចាំថ្ងៃ (.pdf)',
@@ -649,12 +730,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
 
     // Preset Activity Names
     presetChatFb: 'ឆ្លើយតបសារអតិថិជនលើផេក Facebook',
-    presetCheckPlatform: 'ពិនិត្យមើលគ្រប់ Platform',
+    presetCheckPlatform: 'Check Platform(all)view & Engagement',
     presetVideoIdeas: 'ស្វែងរកគំនិតបង្កើតវីដេអូ',
-    presetDesignPoster: 'ឌីហ្សាញ Poster',
+    presetDesignPoster: 'Design(Video or poster)',
     presetEditVideo: 'កាត់តវីដេអូ',
-    presetPostPage: 'ផុសលើផេក Facebook/TikTok',
-    presetFindElement: 'ស្វែងរក Element សម្រាប់ Design',
+    presetPostPage: 'Post on Platform',
+    presetFindElement: 'Sreach Elements',
     presetTakeVideo: 'ថតវីដេអូ',
   },
 };

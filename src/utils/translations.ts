@@ -40,6 +40,12 @@ export interface Translations {
   satShort: string;
 
   // Check-In / Check-Out & Attendance
+  presentStatus: string;
+  permissionStatus: string;
+  absentNoPermissionStatus: string;
+  presentWorkedToday: string;
+  permissionOnLeaveToday: string;
+  absentNoPermissionDesc: string;
   checkIn: string;
   checkOut: string;
   checkedIn: string;
@@ -154,6 +160,18 @@ export interface Translations {
   // Export Modal
   exportModalTitle: string;
   exportModalSubtitle: string;
+  dateRangeExportTitle: string;
+  dateRangeExportSubtitle: string;
+  fromDate: string;
+  toDate: string;
+  presetDay01To15: string;
+  presetDay16ToEnd: string;
+  presetFullMonth: string;
+  presetThisWeek: string;
+  presetToday: string;
+  downloadRangeExcel: string;
+  downloadRangePdf: string;
+  daysSelected: string;
   exportWeeklyFeaturedTitle: string;
   exportWeeklyFeaturedBadge: string;
   exportWeeklyFeaturedDesc: string;
@@ -287,7 +305,13 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     satShort: 'Sat',
 
     // Check-In / Check-Out & Attendance
-    checkIn: 'Check In',
+    presentStatus: 'Present (វត្តមាន)',
+    permissionStatus: 'Permission (ច្បាប់)',
+    absentNoPermissionStatus: 'Absent - No Permission (អវត្តមានឥតច្បាប់)',
+    presentWorkedToday: 'Worked Today (វត្តមាន)',
+    permissionOnLeaveToday: 'On Leave with Permission (មានច្បាប់)',
+    absentNoPermissionDesc: 'Did not check in and did not request permission (Absent without permission)',
+    checkIn: 'វត្តមាន (Check In)',
     checkOut: 'Check Out',
     checkedIn: 'Checked In',
     checkedOut: 'Checked Out',
@@ -401,6 +425,18 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     // Export Modal
     exportModalTitle: 'Export Daily & Weekly Reports',
     exportModalSubtitle: 'Generate Excel workbooks, multi-day PDF files, or sync with cloud sheets',
+    dateRangeExportTitle: 'Custom Date Range (Day to Day)',
+    dateRangeExportSubtitle: 'Select any start date and end date (e.g. Day 01 to 15) to download Excel or PDF',
+    fromDate: 'From Date',
+    toDate: 'To Date',
+    presetDay01To15: 'Day 01 - 15',
+    presetDay16ToEnd: 'Day 16 - End',
+    presetFullMonth: 'Full Month',
+    presetThisWeek: 'This Week',
+    presetToday: 'Today',
+    downloadRangeExcel: 'Download Range Excel',
+    downloadRangePdf: 'Download Range PDF',
+    daysSelected: 'days selected',
     exportWeeklyFeaturedTitle: '1-Week Report (7 Days 7 Tables)',
     exportWeeklyFeaturedBadge: 'Recommended',
     exportWeeklyFeaturedDesc: '(Mon - Sun) containing 7 distinct daily schedule tables, timestamps, notes, and work session hours',
@@ -533,7 +569,13 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     satShort: 'ស',
 
     // Check-In / Check-Out & Attendance
-    checkIn: 'ចុះឈ្មោះចូល (Check-In)',
+    presentStatus: 'វត្តមាន',
+    permissionStatus: 'មានច្បាប់ (P)',
+    absentNoPermissionStatus: 'អវត្តមានឥតច្បាប់',
+    presentWorkedToday: 'បានចូលធ្វើការថ្ងៃនេះ (វត្តមាន)',
+    permissionOnLeaveToday: 'បានសុំច្បាប់ឈប់សម្រាក (មានច្បាប់)',
+    absentNoPermissionDesc: 'មិនបាន Check-In វត្តមាន និងមិនបានសុំច្បាប់ (អវត្តមានឥតច្បាប់)',
+    checkIn: 'វត្តមាន (Check In)',
     checkOut: 'ចុះឈ្មោះចេញ (Check-Out)',
     checkedIn: 'បានចូលធ្វើការ',
     checkedOut: 'បានចេញពីធ្វើការ',
@@ -647,6 +689,18 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     // Export Modal
     exportModalTitle: 'ទាញយករបាយការណ៍ប្រចាំថ្ងៃ និងសប្តាហ៍',
     exportModalSubtitle: 'ទាញយកជាឯកសារ Excel, PDF ឬ ធ្វើសមកាលកម្មជាមួយ Google Sheets',
+    dateRangeExportTitle: 'ទាញយកតាមចន្លោះថ្ងៃ (ពីថ្ងៃទី ទៅ ថ្ងៃទី)',
+    dateRangeExportSubtitle: 'ជ្រើសរើសថ្ងៃចាប់ផ្ដើម និងថ្ងៃបញ្ចប់ (ឧទាហរណ៍ ០១ ដល់ ១៥) ដើម្បីទាញយក Excel ឬ PDF',
+    fromDate: 'ពីថ្ងៃទី',
+    toDate: 'ដល់ថ្ងៃទី',
+    presetDay01To15: 'ថ្ងៃទី ០១ - ១៥',
+    presetDay16ToEnd: 'ថ្ងៃទី ១៦ - ចុងខែ',
+    presetFullMonth: 'ពេញមួយខែ',
+    presetThisWeek: 'សប្តាហ៍នេះ',
+    presetToday: 'ថ្ងៃនេះ',
+    downloadRangeExcel: 'ទាញយក Excel តាមចន្លោះថ្ងៃ',
+    downloadRangePdf: 'ទាញយក PDF តាមចន្លោះថ្ងៃ',
+    daysSelected: 'ថ្ងៃត្រូវបានជ្រើសរើស',
     exportWeeklyFeaturedTitle: 'របាយការណ៍ ១សប្តាហ៍ (៧ថ្ងៃ ៧តារាងដាច់ដោយឡែក)',
     exportWeeklyFeaturedBadge: 'ណែនាំ',
     exportWeeklyFeaturedDesc: '(ច័ន្ទ - អាទិត្យ) មានតារាង ៧ថ្ងៃដាច់ដោយឡែក រួមទាំងម៉ោង និងកំណត់ចំណាំលម្អិត',

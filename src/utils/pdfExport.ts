@@ -5,7 +5,9 @@ import {
   formatDateToScreenshotBanner,
   formatTimeSlotToTwoDigitHours,
   getWeekDays7,
-  getWeekRangeLabel
+  getWeekRangeLabel,
+  getDateRangeDays,
+  getDateRangeLabel
 } from './dateUtils';
 import { createNewDayReport } from './storage';
 
@@ -113,13 +115,58 @@ function renderPdfDayTable(doc: jsPDF, report: DayReport, startY: number): numbe
     doc.text(reasonText, colX[2] + 2, y + 4.8);
 
     doc.rect(colX[3], y, colW[3], 7, 'S');
-    doc.text('✓', colX[3] + colW[3] / 2, y + 4.8, { align: 'center' });
+    const midX = colX[3] + colW[3] / 2;
+    const midY = y + 3.5;
+    doc.setDrawColor(22, 163, 74);
+    doc.setLineWidth(0.5);
+    doc.line(midX - 2.2, midY, midX - 0.7, midY + 1.8);
+    doc.line(midX - 0.7, midY + 1.8, midX + 2.4, midY - 1.8);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
 
     doc.rect(colX[4], y, colW[4], 7, 'S');
-    doc.text(report.absentReason || '', colX[4] + 2, y + 4.8);
+    doc.text(report.absentReason || 'Approved Permission', colX[4] + 2, y + 4.8);
 
     doc.rect(colX[5], y, colW[5], 7, 'S');
     doc.text(report.notes || '', colX[5] + 2, y + 4.8);
+
+    y += 7;
+    return y + 6;
+  }
+
+  // 3.5 ABSENT WITHOUT PERMISSION ROW
+  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission;
+  if (isAbsentNoPermission && (!report.tasks || report.tasks.length === 0)) {
+    doc.setFillColor(254, 242, 242);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(153, 27, 27);
+
+    doc.rect(colX[0], y, colW[0], 7, 'S');
+    doc.text('1', colX[0] + colW[0] / 2, y + 4.8, { align: 'center' });
+
+    doc.rect(colX[1], y, colW[1], 7, 'S');
+    doc.text('ABSENT', colX[1] + colW[1] / 2, y + 4.8, { align: 'center' });
+
+    doc.rect(colX[2], y, colW[2], 7, 'S');
+    doc.text('(អវត្តមានឥតច្បាប់ / Absent without permission)', colX[2] + 2, y + 4.8);
+
+    doc.rect(colX[3], y, colW[3], 7, 'S');
+    const midX = colX[3] + colW[3] / 2;
+    const midY = y + 3.5;
+    doc.setDrawColor(225, 29, 72);
+    doc.setLineWidth(0.55);
+    doc.line(midX - 1.8, midY - 1.8, midX + 1.8, midY + 1.8);
+    doc.line(midX + 1.8, midY - 1.8, midX - 1.8, midY + 1.8);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+
+    doc.rect(colX[4], y, colW[4], 7, 'S');
+    doc.text('No check-in & no permission requested', colX[4] + 2, y + 4.8);
+
+    doc.rect(colX[5], y, colW[5], 7, 'S');
+    doc.text(report.notes || 'Absent', colX[5] + 2, y + 4.8);
 
     y += 7;
     return y + 6;
@@ -135,7 +182,6 @@ function renderPdfDayTable(doc: jsPDF, report: DayReport, startY: number): numbe
   regularTasks.forEach((task) => {
     const isCompleted = task.isCompleted || task.status === 'completed';
     const isCrossed = task.status === 'crossed';
-    const checkSymbol = isCompleted ? '✓' : isCrossed ? '✗' : '';
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
@@ -153,16 +199,25 @@ function renderPdfDayTable(doc: jsPDF, report: DayReport, startY: number): numbe
     doc.text(truncTask, colX[2] + 2, y + 4.2);
 
     doc.rect(colX[3], y, colW[3], 6, 'S');
-    if (checkSymbol === '✗') {
-      doc.setTextColor(225, 29, 72);
-      doc.setFont('helvetica', 'bold');
-    } else if (checkSymbol === '✓') {
-      doc.setTextColor(16, 185, 129);
-      doc.setFont('helvetica', 'bold');
+    const midX = colX[3] + colW[3] / 2;
+    const midY = y + 3;
+    if (isCompleted) {
+      // Draw sharp vector Checkmark (✓) in Green
+      doc.setDrawColor(22, 163, 74);
+      doc.setLineWidth(0.5);
+      doc.line(midX - 2.2, midY, midX - 0.7, midY + 1.8);
+      doc.line(midX - 0.7, midY + 1.8, midX + 2.4, midY - 1.8);
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.2);
+    } else if (isCrossed) {
+      // Draw sharp vector Cross (✗) in Red
+      doc.setDrawColor(225, 29, 72);
+      doc.setLineWidth(0.55);
+      doc.line(midX - 1.8, midY - 1.8, midX + 1.8, midY + 1.8);
+      doc.line(midX + 1.8, midY - 1.8, midX - 1.8, midY + 1.8);
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.2);
     }
-    doc.text(checkSymbol, colX[3] + colW[3] / 2, y + 4.2, { align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'normal');
 
     doc.rect(colX[4], y, colW[4], 6, 'S');
     const truncReason = doc.splitTextToSize(task.crossReason || '', colW[4] - 4)[0] || '';
@@ -190,7 +245,6 @@ function renderPdfDayTable(doc: jsPDF, report: DayReport, startY: number): numbe
   overtimeTasks.forEach((task) => {
     const isCompleted = task.isCompleted || task.status === 'completed';
     const isCrossed = task.status === 'crossed';
-    const checkSymbol = isCompleted ? '✓' : isCrossed ? '✗' : '';
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
@@ -208,16 +262,25 @@ function renderPdfDayTable(doc: jsPDF, report: DayReport, startY: number): numbe
     doc.text(truncTask, colX[2] + 2, y + 4.2);
 
     doc.rect(colX[3], y, colW[3], 6, 'S');
-    if (checkSymbol === '✗') {
-      doc.setTextColor(225, 29, 72);
-      doc.setFont('helvetica', 'bold');
-    } else if (checkSymbol === '✓') {
-      doc.setTextColor(16, 185, 129);
-      doc.setFont('helvetica', 'bold');
+    const otMidX = colX[3] + colW[3] / 2;
+    const otMidY = y + 3;
+    if (isCompleted) {
+      // Draw sharp vector Checkmark (✓) in Green
+      doc.setDrawColor(22, 163, 74);
+      doc.setLineWidth(0.5);
+      doc.line(otMidX - 2.2, otMidY, otMidX - 0.7, otMidY + 1.8);
+      doc.line(otMidX - 0.7, otMidY + 1.8, otMidX + 2.4, otMidY - 1.8);
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.2);
+    } else if (isCrossed) {
+      // Draw sharp vector Cross (✗) in Red
+      doc.setDrawColor(225, 29, 72);
+      doc.setLineWidth(0.55);
+      doc.line(otMidX - 1.8, otMidY - 1.8, otMidX + 1.8, otMidY + 1.8);
+      doc.line(otMidX + 1.8, otMidY - 1.8, otMidX - 1.8, otMidY + 1.8);
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.2);
     }
-    doc.text(checkSymbol, colX[3] + colW[3] / 2, y + 4.2, { align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'normal');
 
     doc.rect(colX[4], y, colW[4], 6, 'S');
     const truncReason = doc.splitTextToSize(task.crossReason || '', colW[4] - 4)[0] || '';
@@ -313,4 +376,54 @@ export async function exportWeeklyReportToPDF(
   }
 
   doc.save(`1_Week_Report_${weekDays[0]}_to_${weekDays[6]}_${(userProfile.employeeName || 'Report').replace(/\s+/g, '_')}.pdf`);
+}
+
+/**
+ * Generates Custom Date Range PDF (Day to Day, e.g. 01 to 15) containing Daily Tables
+ */
+export async function exportDateRangeReportToPDF(
+  startDate: string,
+  endDate: string,
+  reportsMap: Record<string, DayReport>,
+  userProfile: UserProfile,
+  defaultSchedule: DefaultTimeSlotTemplate[]
+): Promise<void> {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const dateRangeDays = getDateRangeDays(startDate, endDate);
+  if (dateRangeDays.length === 0) return;
+
+  const firstDate = dateRangeDays[0];
+  const lastDate = dateRangeDays[dateRangeDays.length - 1];
+  const rangeLabel = getDateRangeLabel(startDate, endDate);
+
+  let y = 14;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(30, 41, 59);
+  doc.text(`WORK REPORT (${rangeLabel})`, 105, y, { align: 'center' });
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Employee: ${userProfile.employeeName} | ${userProfile.department} | ${dateRangeDays.length} Days`, 105, y + 5, { align: 'center' });
+  y += 12;
+
+  for (let i = 0; i < dateRangeDays.length; i++) {
+    const dateKey = dateRangeDays[i];
+    const report = reportsMap[dateKey] || createNewDayReport(dateKey, defaultSchedule, userProfile);
+
+    // If nearing bottom of page, add new page
+    if (y > 240) {
+      doc.addPage();
+      y = 14;
+    }
+
+    y = renderPdfDayTable(doc, report, y);
+  }
+
+  doc.save(`Report_${firstDate}_to_${lastDate}_${(userProfile.employeeName || 'Report').replace(/\s+/g, '_')}.pdf`);
 }

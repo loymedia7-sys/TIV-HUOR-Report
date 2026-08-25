@@ -8,7 +8,9 @@ import {
   getMonthWeekBuckets,
   MONTH_NAMES,
   getWeekDays7,
-  getWeekRangeLabel
+  getWeekRangeLabel,
+  getDateRangeDays,
+  getDateRangeLabel
 } from './dateUtils';
 import { createNewDayReport } from './storage';
 
@@ -74,7 +76,7 @@ export function renderDayTableToWorksheet(
   });
   currentRow++;
 
-  // 3. IF PERMISSION / ABSENT DAY: Render the Red Permission Row matching image
+  // 3. IF PERMISSION / SICK LEAVE DAY: Render the Red Permission Row matching image
   if (isPermission) {
     const permRow = worksheet.getRow(currentRow);
     permRow.height = 24;
@@ -85,7 +87,7 @@ export function renderDayTableToWorksheet(
     permRow.getCell(2).value = report.permissionType || 'P';
     permRow.getCell(3).value = reasonText;
     permRow.getCell(4).value = '✓';
-    permRow.getCell(5).value = report.absentReason || '';
+    permRow.getCell(5).value = report.absentReason || 'Approved Permission';
     permRow.getCell(6).value = report.notes || '';
 
     for (let c = 1; c <= 6; c++) {
@@ -119,6 +121,55 @@ export function renderDayTableToWorksheet(
     return currentRow + 1; // Extra space after table
   }
 
+  // 3.5 IF NOT CHECKED-IN AND NO PERMISSION: User was Absent without permission
+  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission;
+  if (isAbsentNoPermission && (!report.tasks || report.tasks.length === 0)) {
+    const absentRow = worksheet.getRow(currentRow);
+    absentRow.height = 24;
+
+    absentRow.getCell(1).value = 1;
+    absentRow.getCell(2).value = 'ABSENT';
+    absentRow.getCell(3).value = '(អវត្តមានឥតច្បាប់ / Absent without permission)';
+    absentRow.getCell(4).value = '✗';
+    absentRow.getCell(5).value = 'មិនបាន Check-in វត្តមាន និងមិនបានសុំច្បាប់';
+    absentRow.getCell(6).value = report.notes || 'No Check-In & No Permission';
+
+    for (let c = 1; c <= 6; c++) {
+      const cell = absentRow.getCell(c);
+      cell.border = THIN_BLACK_BORDER;
+      cell.font = {
+        name: 'Calibri',
+        size: 11,
+        bold: true,
+        color: { argb: c === 4 ? 'FFE11D48' : 'FF991B1B' }
+      };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFE4E6' } // Soft rose/red alert background
+      };
+      cell.alignment = {
+        horizontal: c === 1 || c === 2 || c === 4 ? 'center' : 'left',
+        vertical: 'middle'
+      };
+    }
+    currentRow++;
+
+    // Add template blank rows
+    for (let i = 2; i <= 6; i++) {
+      const emptyRow = worksheet.getRow(currentRow);
+      emptyRow.height = 22;
+      emptyRow.getCell(1).value = i;
+      emptyRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+      for (let c = 1; c <= 6; c++) {
+        emptyRow.getCell(c).border = THIN_BLACK_BORDER;
+      }
+      currentRow++;
+    }
+
+    return currentRow + 1;
+  }
+
   // 4. REGULAR TASKS & OVERTIME TASKS
   const allTasks = report.tasks || [];
   const regularTasks = allTasks.filter(t => t.scheduleType !== 'Over Time' && !t.isOvertime);
@@ -131,7 +182,11 @@ export function renderDayTableToWorksheet(
     const row = worksheet.getRow(currentRow);
     row.height = 23;
 
-    const checkingSymbol = task.isCompleted || task.status === 'completed' ? '✓' : task.status === 'crossed' ? '✗' : '';
+    const checkingSymbol = (task.isCompleted || task.status === 'completed')
+      ? '✓'
+      : task.status === 'crossed'
+      ? '✗'
+      : '';
     const formattedTime = formatTimeSlotToTwoDigitHours(task.timeSlot) || task.timeSlot;
 
     row.getCell(1).value = taskNumber;
@@ -144,12 +199,22 @@ export function renderDayTableToWorksheet(
     for (let c = 1; c <= 6; c++) {
       const cell = row.getCell(c);
       cell.border = THIN_BLACK_BORDER;
-      cell.font = {
-        name: 'Calibri',
-        size: 11,
-        bold: c === 4 && checkingSymbol === '✓',
-        color: { argb: c === 4 && checkingSymbol === '✗' ? 'FFE11D48' : 'FF000000' }
-      };
+      if (c === 4) {
+        // Checking column: crisp bold Check (✓) or Cross (✗)
+        cell.font = {
+          name: 'Arial',
+          size: 13,
+          bold: true,
+          color: { argb: checkingSymbol === '✗' ? 'FFE11D48' : checkingSymbol === '✓' ? 'FF16A34A' : 'FF000000' }
+        };
+      } else {
+        cell.font = {
+          name: 'Calibri',
+          size: 11,
+          bold: false,
+          color: { argb: 'FF000000' }
+        };
+      }
       cell.alignment = {
         horizontal: c === 1 || c === 2 || c === 4 ? 'center' : 'left',
         vertical: 'middle'
@@ -195,7 +260,11 @@ export function renderDayTableToWorksheet(
     const row = worksheet.getRow(currentRow);
     row.height = 23;
 
-    const checkingSymbol = task.isCompleted || task.status === 'completed' ? '✓' : task.status === 'crossed' ? '✗' : '';
+    const checkingSymbol = (task.isCompleted || task.status === 'completed')
+      ? '✓'
+      : task.status === 'crossed'
+      ? '✗'
+      : '';
     const formattedTime = formatTimeSlotToTwoDigitHours(task.timeSlot) || task.timeSlot;
 
     row.getCell(1).value = taskNumber;
@@ -208,12 +277,22 @@ export function renderDayTableToWorksheet(
     for (let c = 1; c <= 6; c++) {
       const cell = row.getCell(c);
       cell.border = THIN_BLACK_BORDER;
-      cell.font = {
-        name: 'Calibri',
-        size: 11,
-        bold: c === 4 && checkingSymbol === '✓',
-        color: { argb: c === 4 && checkingSymbol === '✗' ? 'FFE11D48' : 'FF000000' }
-      };
+      if (c === 4) {
+        // Checking column: crisp bold Check (✓) or Cross (✗)
+        cell.font = {
+          name: 'Arial',
+          size: 13,
+          bold: true,
+          color: { argb: checkingSymbol === '✗' ? 'FFE11D48' : checkingSymbol === '✓' ? 'FF16A34A' : 'FF000000' }
+        };
+      } else {
+        cell.font = {
+          name: 'Calibri',
+          size: 11,
+          bold: false,
+          color: { argb: 'FF000000' }
+        };
+      }
       cell.alignment = {
         horizontal: c === 1 || c === 2 || c === 4 ? 'center' : 'left',
         vertical: 'middle'
@@ -323,6 +402,61 @@ export async function exportWeeklyReportToExcel(
   const a = document.createElement('a');
   a.href = url;
   a.download = `1_Week_Report_${weekDays[0]}_to_${weekDays[6]}_${(userProfile.employeeName || 'Report').replace(/\s+/g, '_')}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Export Custom Date Range Report (Day to Day, e.g. 01 to 15) to Excel
+ */
+export async function exportDateRangeReportToExcel(
+  startDate: string,
+  endDate: string,
+  reportsMap: Record<string, DayReport>,
+  userProfile: UserProfile,
+  defaultSchedule: DefaultTimeSlotTemplate[]
+): Promise<void> {
+  const dateRangeDays = getDateRangeDays(startDate, endDate);
+  if (dateRangeDays.length === 0) return;
+
+  const firstDate = dateRangeDays[0];
+  const lastDate = dateRangeDays[dateRangeDays.length - 1];
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = userProfile.employeeName || 'ROTH DARO';
+  workbook.created = new Date();
+
+  const worksheet = workbook.addWorksheet(`Report_${firstDate.slice(5)}_to_${lastDate.slice(5)}`, {
+    views: [{ showGridLines: true }]
+  });
+
+  // Set column widths
+  worksheet.columns = [
+    { key: 'no', width: 7 },
+    { key: 'time', width: 14 },
+    { key: 'task', width: 44 },
+    { key: 'checking', width: 14 },
+    { key: 'reason', width: 28 },
+    { key: 'other', width: 28 }
+  ];
+
+  let currentStartRow = 1;
+
+  // Render each daily table in the range stacked cleanly
+  for (const dateKey of dateRangeDays) {
+    const dayReport = reportsMap[dateKey] || createNewDayReport(dateKey, defaultSchedule, userProfile);
+    currentStartRow = renderDayTableToWorksheet(worksheet, dayReport, currentStartRow);
+  }
+
+  // Trigger download
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Report_${firstDate}_to_${lastDate}_${(userProfile.employeeName || 'Report').replace(/\s+/g, '_')}.xlsx`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

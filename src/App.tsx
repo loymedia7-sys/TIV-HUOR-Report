@@ -19,6 +19,7 @@ import {
 import {
   subscribeToAuth,
   loginWithGoogle,
+  loginAnonymously,
   logout
 } from './lib/firebase';
 import {
@@ -75,14 +76,14 @@ export default function App() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
 
-  // Subscribe to Firebase Auth changes
+  // Subscribe to Firebase Auth changes & maintain cloud sync
   useEffect(() => {
     const unsubscribeAuth = subscribeToAuth(async (user) => {
       if (user) {
         const authData: AuthUser = {
           uid: user.uid,
-          displayName: user.displayName,
-          email: user.email,
+          displayName: user.displayName || (user.isAnonymous ? 'Firebase Cloud' : 'User'),
+          email: user.email || (user.isAnonymous ? 'cloud-connected' : 'firebase@user'),
           photoURL: user.photoURL,
         };
         setAuthUser(authData);
@@ -90,7 +91,8 @@ export default function App() {
         // Seed initial data if first time user on Cloud
         await seedInitialFirestoreData(user.uid, appState);
       } else {
-        setAuthUser(null);
+        // Automatically establish Firebase session so user is always on Firebase
+        loginAnonymously().catch(() => {});
       }
     });
 
@@ -176,19 +178,26 @@ export default function App() {
   };
 
   // ==========================================
-  // Attendance: Check-In & Check-Out Handlers
+  // Attendance: Check-In (វត្តមាន) & Permission Handlers
   // ==========================================
   const handleCheckIn = (customTime?: string) => {
     const nowTimeStr = customTime || getCurrentTimeString();
     const nowTimestamp = Date.now();
 
-    updateCurrentReport((rep) => ({
-      ...rep,
-      isCheckedIn: true,
-      currentCheckInTime: nowTimeStr,
-      currentCheckInTimestamp: nowTimestamp,
-      isAbsent: false,
-    }));
+    updateCurrentReport((rep) => {
+      const willBeCheckedIn = !rep.isCheckedIn;
+      return {
+        ...rep,
+        isCheckedIn: willBeCheckedIn,
+        currentCheckInTime: willBeCheckedIn ? nowTimeStr : undefined,
+        currentCheckInTimestamp: willBeCheckedIn ? nowTimestamp : undefined,
+        isPermission: false,
+        permissionType: undefined,
+        permissionReason: undefined,
+        isAbsent: false,
+        absentReason: undefined,
+      };
+    });
   };
 
   const handleCheckOut = (customTime?: string, notes?: string) => {
@@ -244,6 +253,7 @@ export default function App() {
   }) => {
     updateCurrentReport((rep) => ({
       ...rep,
+      isCheckedIn: false,
       isPermission: permData.isPermission,
       permissionType: permData.permissionType,
       permissionReason: permData.permissionReason,

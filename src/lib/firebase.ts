@@ -8,6 +8,7 @@ import {
   getRedirectResult,
   signOut,
   onAuthStateChanged,
+  signInAnonymously,
   User
 } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
@@ -105,6 +106,16 @@ export async function logout(): Promise<void> {
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
+  }
+}
+
+export async function loginAnonymously(): Promise<User | null> {
+  try {
+    const result = await signInAnonymously(auth);
+    return result.user;
+  } catch (error) {
+    console.warn('Anonymous sign-in note:', error);
+    return null;
   }
 }
 

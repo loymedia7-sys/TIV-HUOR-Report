@@ -77,6 +77,28 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({
           scheduleType: 'Holiday',
           notes: rep.holidayReason || (language === 'km' ? 'ថ្ងៃឈប់សម្រាក' : 'Off Day')
         });
+      } else if (rep.isPermission) {
+        list.push({
+          id: `${dateKey}_permission`,
+          date: dateKey,
+          dayOfWeek: rep.dayOfWeek,
+          isHoliday: false,
+          timeSlot: rep.permissionType || 'P',
+          taskName: `${language === 'km' ? 'ច្បាប់ឈប់សម្រាក' : 'Permission / Leave'}: ${rep.permissionReason || 'sick can go need to rest and sleep'}`,
+          scheduleType: 'Permission',
+          notes: rep.notes || (language === 'km' ? 'បានអនុញ្ញាតច្បាប់ (✓)' : 'Approved Leave (✓)')
+        });
+      } else if (!rep.isCheckedIn && (!rep.tasks || rep.tasks.length === 0)) {
+        list.push({
+          id: `${dateKey}_absent`,
+          date: dateKey,
+          dayOfWeek: rep.dayOfWeek,
+          isHoliday: false,
+          timeSlot: 'ABSENT',
+          taskName: language === 'km' ? 'អវត្តមានឥតច្បាប់ (មិនបាន Check-In វត្តមាន)' : 'Absent without permission (No Check-In)',
+          scheduleType: 'Absent',
+          notes: language === 'km' ? 'មិនបានស្នើសុំច្បាប់' : 'No permission requested'
+        });
       } else {
         rep.tasks.forEach((tTask) => {
           // Keyword Search Filter
@@ -286,6 +308,14 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({
                     <td className="py-3 px-3 text-center whitespace-nowrap bg-red-50/60">
                       {log.isHoliday ? (
                         <span className="text-amber-700 font-bold text-[10px]">HOLIDAY</span>
+                      ) : log.scheduleType === 'Permission' ? (
+                        <span className="inline-flex items-center gap-1 text-red-800 bg-red-200/80 px-2.5 py-0.5 rounded font-black text-[10px] border border-red-300">
+                          <span>{language === 'km' ? 'ច្បាប់ (P)' : 'Permission (P)'}</span>
+                        </span>
+                      ) : log.scheduleType === 'Absent' ? (
+                        <span className="inline-flex items-center gap-1 text-rose-900 bg-rose-200/80 px-2.5 py-0.5 rounded font-black text-[10px] border border-rose-300">
+                          <span>{language === 'km' ? 'អវត្តមាន' : 'Absent'}</span>
+                        </span>
                       ) : log.scheduleType === 'Over Time' ? (
                         <span className="inline-flex items-center gap-1 text-rose-800 bg-rose-100 px-2.5 py-0.5 rounded font-black text-[10px] border border-rose-300">
                           <Clock className="w-3 h-3 text-rose-600" />

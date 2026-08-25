@@ -294,22 +294,28 @@ export const Checklist: React.FC<ChecklistProps> = ({
       ) : null}
 
       {/* ========================================================================= */}
-      {/* 2. ATTENDANCE & CHECK-IN / CHECK-OUT STATUS BAR                          */}
+      {/* 2. ATTENDANCE & STATUS BAR (វត្តមាន / សុំច្បាប់ / អវត្តមានឥតច្បាប់)          */}
       {/* ========================================================================= */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-xs transition-all">
+      <div className={`border rounded-3xl p-4 sm:p-5 shadow-xs transition-all ${
+        isCheckedIn
+          ? 'bg-emerald-50/70 border-emerald-200'
+          : isPermissionActive
+          ? 'bg-rose-50/70 border-rose-200'
+          : 'bg-amber-50/70 border-amber-200'
+      }`}>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           
-          {/* Left: Shift & Check-In Status */}
+          {/* Left: Attendance Status Indicator */}
           <div className="flex items-center gap-3.5">
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
               isCheckedIn
-                ? 'bg-emerald-100 text-emerald-700 ring-4 ring-emerald-50'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
                 : isPermissionActive
-                ? 'bg-red-100 text-red-700 ring-4 ring-red-50'
-                : 'bg-amber-100 text-amber-700 ring-4 ring-amber-50'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/20'
+                : 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
             }`}>
               {isCheckedIn ? (
-                <LogIn className="w-6 h-6 animate-pulse" />
+                <CheckCircle2 className="w-6 h-6" />
               ) : isPermissionActive ? (
                 <HeartPulse className="w-6 h-6" />
               ) : (
@@ -319,140 +325,86 @@ export const Checklist: React.FC<ChecklistProps> = ({
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                   isCheckedIn
-                    ? 'bg-emerald-100 text-emerald-800'
+                    ? 'bg-emerald-600 text-white shadow-xs'
                     : isPermissionActive
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-amber-100 text-amber-900'
+                    ? 'bg-red-600 text-white shadow-xs'
+                    : 'bg-amber-600 text-white shadow-xs'
                 }`}>
-                  <span className={`w-2 h-2 rounded-full ${
-                    isCheckedIn ? 'bg-emerald-500 animate-ping' : isPermissionActive ? 'bg-red-500' : 'bg-amber-500'
-                  }`} />
+                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                   {isCheckedIn
-                    ? t.activeWorkShift
+                    ? t.presentStatus
                     : isPermissionActive
-                    ? t.permissionActiveBadge
-                    : t.notCheckedInStatus}
+                    ? t.permissionStatus
+                    : t.absentNoPermissionStatus}
                 </span>
 
-                {isCheckedIn && currentCheckInTime && (
-                  <span className="text-xs font-bold text-slate-500">
-                    {t.checkedInAt} <span className="text-slate-800">{currentCheckInTime}</span>
-                  </span>
-                )}
+                <span className="text-xs font-bold text-slate-700">
+                  {formatDateToScreenshotBanner(report?.date || selectedDate || '')}
+                </span>
               </div>
 
-              <div className="flex items-center gap-3 mt-1 text-xs text-slate-600 flex-wrap">
+              <div className="mt-1 text-xs font-medium">
                 {isCheckedIn ? (
-                  <p className="flex items-center gap-1 font-bold text-emerald-700">
-                    <Timer className="w-3.5 h-3.5" />
-                    <span>{t.currentShiftDuration}: </span>
-                    <span className="font-mono bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                      {formatLiveDuration(liveShiftSeconds)}
-                    </span>
+                  <p className="text-emerald-800 font-semibold flex items-center gap-1.5">
+                    <span>✓</span>
+                    <span>{language === 'km' ? 'ថ្ងៃនេះបានចូលធ្វើការ (វត្តមាន)' : 'User checked in and worked today (Present)'}</span>
+                    {report?.currentCheckInTime && (
+                      <span className="text-slate-500 font-normal">({t.checkedInAt} {report.currentCheckInTime})</span>
+                    )}
+                  </p>
+                ) : isPermissionActive ? (
+                  <p className="text-red-800 font-semibold">
+                    {language === 'km' ? 'ថ្ងៃនេះមិនបានធ្វើការ (មានច្បាប់ P)៖ ' : 'Did not work today (With approved permission P): '}
+                    <span className="font-bold underline">({report?.permissionReason || 'sick can go need to rest and sleep'})</span>
                   </p>
                 ) : (
-                  <p className="text-slate-500">
-                    {isPermissionActive
-                      ? `(${report?.permissionReason || 'sick can go need to rest and sleep'})`
-                      : t.notCheckedInAbsentHint}
+                  <p className="text-amber-900 font-semibold flex items-center gap-1.5">
+                    <span>⚠️</span>
+                    <span>{language === 'km' ? 'មិនបាន Check-In វត្តមាន និងមិនបានសុំច្បាប់ (អវត្តមានឥតច្បាប់)' : 'Did not check in and did not request permission (Absent without permission)'}</span>
                   </p>
-                )}
-
-                {totalWorkedMinutes > 0 && (
-                  <span className="text-slate-500 font-medium">
-                    • {t.totalWorkedToday}: <strong className="text-slate-800">{formatMinutesToHours(totalWorkedMinutes)}</strong>
-                  </span>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Right: Check In / Check Out Buttons & Permission Action */}
+          {/* Right: Direct 1-Click Action Buttons for វត្តមាន (Check In) & សុំច្បាប់ (Permission) */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            {/* Permission / Absent Button */}
+            {/* 1. វត្តមាន (Check In) Button */}
+            <button
+              onClick={() => onCheckIn && onCheckIn()}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 cursor-pointer shadow-sm ${
+                isCheckedIn
+                  ? 'bg-emerald-600 text-white ring-2 ring-emerald-600/30'
+                  : 'bg-white hover:bg-emerald-50 text-emerald-700 border-2 border-emerald-500 hover:border-emerald-600'
+              }`}
+              title={language === 'km' ? 'ចុចដើម្បីបញ្ជាក់វត្តមានធ្វើការថ្ងៃនេះ' : 'Click to check in and record present today'}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{language === 'km' ? 'វត្តមាន (Check In)' : 'វត្តមាន (Check In)'}</span>
+              {isCheckedIn && <span className="text-[10px] bg-white/25 px-1.5 py-0.5 rounded-md font-bold">✓ Active</span>}
+            </button>
+
+            {/* 2. សុំច្បាប់ (Permission) Button */}
             {onOpenPermissionModal && (
               <button
                 onClick={onOpenPermissionModal}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border active:scale-95 cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 cursor-pointer shadow-sm ${
                   isPermissionActive
-                    ? 'bg-red-50 text-red-800 border-red-300 hover:bg-red-100'
-                    : 'bg-rose-50 hover:bg-rose-100 text-rose-900 border-rose-200 shadow-2xs'
+                    ? 'bg-red-600 text-white ring-2 ring-red-600/30'
+                    : 'bg-white hover:bg-rose-50 text-red-700 border-2 border-red-400 hover:border-red-500'
                 }`}
-                title={t.putPermissionBtn}
+                title={language === 'km' ? 'ចុចដើម្បីកត់ត្រាការសុំច្បាប់សម្រាក' : 'Click to record leave with permission'}
               >
-                <ShieldAlert className="w-4 h-4 text-red-600" />
-                <span>{isPermissionActive ? t.permissionActiveBadge : t.putPermissionBtn}</span>
-              </button>
-            )}
-
-            {/* Check-In / Check-Out Toggle */}
-            {isCheckedIn ? (
-              <button
-                onClick={() => setIsCheckOutModalOpen(true)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm shadow-rose-600/20 transition-all active:scale-95 cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>{t.checkOut}</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => onCheckIn && onCheckIn()}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>{t.checkIn}</span>
-              </button>
-            )}
-
-            {/* View Session History */}
-            {workSessions.length > 0 && (
-              <button
-                onClick={() => setShowSessionsHistory(!showSessionsHistory)}
-                className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
-                title={t.workSessions}
-              >
-                <History className="w-4 h-4" />
+                <ShieldAlert className="w-4 h-4 text-red-500" />
+                <span>{language === 'km' ? 'សុំច្បាប់ (Permission)' : 'សុំច្បាប់ (Permission)'}</span>
+                {isPermissionActive && <span className="text-[10px] bg-white/25 px-1.5 py-0.5 rounded-md font-bold">✓ P Active</span>}
               </button>
             )}
           </div>
 
         </div>
-
-        {/* Expandable Session Log History */}
-        {showSessionsHistory && workSessions.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <History className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{t.workSessions} ({workSessions.length} {t.sessionsLogged})</span>
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-              {workSessions.map((s, idx) => (
-                <div key={s.id || idx} className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-slate-800">
-                      {s.checkInTime} → {s.checkOutTime || 'Now'}
-                    </div>
-                    <div className="text-indigo-600 font-semibold mt-0.5">
-                      {formatMinutesToHours(s.durationMinutes || 0)}
-                      {s.notes && <span className="text-slate-500 font-normal ml-1">({s.notes})</span>}
-                    </div>
-                  </div>
-                  {onDeleteWorkSession && (
-                    <button
-                      onClick={() => onDeleteWorkSession(s.id)}
-                      className="text-slate-400 hover:text-rose-600 p-1 transition-colors"
-                      title={t.deleteSession}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ========================================================================= */}

@@ -457,6 +457,54 @@ export function getWeekRangeLabel(weekDays: string[]): string {
 }
 
 /**
+ * Returns an array of date keys (YYYY-MM-DD) between startDate and endDate inclusive
+ */
+export function getDateRangeDays(startDate: string, endDate: string): string[] {
+  if (!startDate || !endDate) return [];
+  
+  let start = startDate;
+  let end = endDate;
+  if (start > end) {
+    // swap if inverted
+    start = endDate;
+    end = startDate;
+  }
+
+  const days: string[] = [];
+  const [sy, sm, sd] = start.split('-').map(Number);
+  const [ey, em, ed] = end.split('-').map(Number);
+
+  const cur = new Date(sy, sm - 1, sd);
+  const finish = new Date(ey, em - 1, ed);
+
+  // Safety limit to max 366 days
+  let count = 0;
+  while (cur <= finish && count <= 366) {
+    days.push(formatDateKey(cur));
+    cur.setDate(cur.getDate() + 1);
+    count++;
+  }
+
+  return days;
+}
+
+/**
+ * Formats a custom date range label, e.g. "01 Aug 2026 - 15 Aug 2026"
+ */
+export function getDateRangeLabel(startDate: string, endDate: string): string {
+  if (!startDate || !endDate) return '';
+  let start = startDate;
+  let end = endDate;
+  if (start > end) {
+    start = endDate;
+    end = startDate;
+  }
+  const first = formatFullDateHeader(start);
+  const last = formatFullDateHeader(end);
+  return `${String(first.dayNumber).padStart(2, '0')} ${first.monthName.substring(0, 3)} ${first.year} - ${String(last.dayNumber).padStart(2, '0')} ${last.monthName.substring(0, 3)} ${last.year}`;
+}
+
+/**
  * Returns HH:MM in 24-hour format
  */
 export function get24HourTimeString(date: Date = new Date()): string {

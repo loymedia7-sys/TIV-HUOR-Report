@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
-import { X, FileSpreadsheet, FileText, Cloud, Check, Loader2, Sparkles, AlertCircle, CalendarRange } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  X,
+  FileSpreadsheet,
+  FileText,
+  Cloud,
+  Check,
+  Loader2,
+  Sparkles,
+  AlertCircle,
+  CalendarRange,
+  Calendar,
+  ArrowRight,
+  Download
+} from 'lucide-react';
 import { DayReport, UserProfile, Language, DefaultTimeSlotTemplate } from '../types';
 import {
   exportReportToExcel,
   exportWeeklyReportToExcel,
+  exportDateRangeReportToExcel,
   exportMonthlyOverviewToExcel,
   exportMasterExcel
 } from '../utils/excelExport';
-import { exportReportToPDF, exportWeeklyReportToPDF } from '../utils/pdfExport';
+import {
+  exportReportToPDF,
+  exportWeeklyReportToPDF,
+  exportDateRangeReportToPDF
+} from '../utils/pdfExport';
 import { syncReportToGoogleSheets } from '../utils/googleSheetsSync';
-import { getWeekDays7, getWeekRangeLabel } from '../utils/dateUtils';
+import {
+  getWeekDays7,
+  getWeekRangeLabel,
+  getDateRangeDays,
+  getDateRangeLabel
+} from '../utils/dateUtils';
 import { TRANSLATIONS } from '../utils/translations';
 import { INITIAL_DEFAULT_SCHEDULE } from '../utils/storage';
 
@@ -33,16 +56,92 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   language = 'en',
 }) => {
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
+
+  // Derive initial start and end date based on report's month (Default: 01 to 15 or current date)
+  const [reportYear, reportMonth] = useMemo(() => {
+    const parts = (report?.date || '').split('-');
+    const year = parts[0] || String(new Date().getFullYear());
+    const month = parts[1] || String(new Date().getMonth() + 1).padStart(2, '0');
+    return [year, month];
+  }, [report?.date]);
+
+  // Initial Range default: 01 to 15 of current viewed month
+  const [startDate, setStartDate] = useState<string>(() => `${reportYear}-${reportMonth}-01`);
+  const [endDate, setEndDate] = useState<string>(() => `${reportYear}-${reportMonth}-15`);
+
   const [isSyncingSheets, setIsSyncingSheets] = useState(false);
   const [syncStatus, setSyncStatus] = useState<{ success?: boolean; message?: string } | null>(null);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingWeeklyPDF, setIsExportingWeeklyPDF] = useState(false);
   const [isExportingWeeklyExcel, setIsExportingWeeklyExcel] = useState(false);
+  const [isExportingRangeExcel, setIsExportingRangeExcel] = useState(false);
+  const [isExportingRangePDF, setIsExportingRangePDF] = useState(false);
+
+  // Compute selected days in custom range
+  const rangeDays = useMemo(() => getDateRangeDays(startDate, endDate), [startDate, endDate]);
+  const rangeLabel = useMemo(() => getDateRangeLabel(startDate, endDate), [startDate, endDate]);
 
   if (!isOpen) return null;
 
   const currentWeekDays = getWeekDays7(report.date);
   const currentWeekRangeLabel = getWeekRangeLabel(currentWeekDays);
+
+  // Preset Handlers
+  const handleApplyPreset01To15 = () => {
+    setStartDate(`${reportYear}-${reportMonth}-01`);
+    setEndDate(`${reportYear}-${reportMonth}-15`);
+  };
+
+  const handleApplyPreset16ToEnd = () => {
+    const y = parseInt(reportYear, 10);
+    const m = parseInt(reportMonth, 10);
+    const lastDay = new Date(y, m, 0).getDate();
+    setStartDate(`${reportYear}-${reportMonth}-16`);
+    setEndDate(`${reportYear}-${reportMonth}-${String(lastDay).padStart(2, '0')}`);
+  };
+
+  const handleApplyPresetFullMonth = () => {
+    const y = parseInt(reportYear, 10);
+    const m = parseInt(reportMonth, 10);
+    const lastDay = new Date(y, m, 0).getDate();
+    setStartDate(`${reportYear}-${reportMonth}-01`);
+    setEndDate(`${reportYear}-${reportMonth}-${String(lastDay).padStart(2, '0')}`);
+  };
+
+  const handleApplyPresetThisWeek = () => {
+    setStartDate(currentWeekDays[0]);
+    setEndDate(currentWeekDays[6]);
+  };
+
+  const handleApplyPresetToday = () => {
+    setStartDate(report.date);
+    setEndDate(report.date);
+  };
+
+  // Range Export Handlers
+  const handleExportRangeExcel = async () => {
+    if (!startDate || !endDate) return;
+    setIsExportingRangeExcel(true);
+    try {
+      await exportDateRangeReportToExcel(startDate, endDate, reportsMap, userProfile, defaultSchedule);
+    } catch (err) {
+      console.error('Date range Excel export error:', err);
+    } finally {
+      setIsExportingRangeExcel(false);
+    }
+  };
+
+  const handleExportRangePDF = async () => {
+    if (!startDate || !endDate) return;
+    setIsExportingRangePDF(true);
+    try {
+      await exportDateRangeReportToPDF(startDate, endDate, reportsMap, userProfile, defaultSchedule);
+    } catch (err) {
+      console.error('Date range PDF export error:', err);
+    } finally {
+      setIsExportingRangePDF(false);
+    }
+  };
 
   const handleExcelExportSingle = async () => {
     await exportReportToExcel(report, userProfile);
@@ -102,7 +201,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl w-full max-w-xl max-h-[94vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[94vh] flex flex-col overflow-hidden">
         
         {/* Header */}
         <div className="p-4 sm:p-5 bg-slate-900 text-white flex items-center justify-between shrink-0">
@@ -125,13 +224,148 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
 
         {/* Body Options */}
-        <div className="p-3.5 sm:p-5 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1">
+        <div className="p-3.5 sm:p-5 space-y-4 overflow-y-auto flex-1">
           
-          {/* FEATURED: 1-Week Report (7 Days 7 Tables) */}
-          <div className="p-4 bg-gradient-to-br from-indigo-50/90 via-blue-50/70 to-emerald-50/60 border-2 border-indigo-200/90 rounded-2xl shadow-xs hover:border-indigo-300 transition-all">
+          {/* TOP PRIMARY FEATURE: Select Day to Day (e.g. 01 to 15) */}
+          <div className="p-4 sm:p-5 bg-gradient-to-br from-indigo-50/90 via-blue-50/70 to-emerald-50/60 border-2 border-indigo-300 rounded-2xl sm:rounded-3xl shadow-sm space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-indigo-200/70">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-indigo-600/20">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                    <span>{t.dateRangeExportTitle}</span>
+                    <span className="bg-indigo-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      {rangeDays.length} {t.daysSelected}
+                    </span>
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-slate-600">
+                    {t.dateRangeExportSubtitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 sm:pt-0">
+                <button
+                  type="button"
+                  onClick={handleApplyPreset01To15}
+                  className="px-2.5 py-1 bg-white hover:bg-indigo-600 hover:text-white text-indigo-900 border border-indigo-200 rounded-lg text-[11px] font-bold shadow-2xs transition-all cursor-pointer active:scale-95"
+                >
+                  {t.presetDay01To15}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyPreset16ToEnd}
+                  className="px-2.5 py-1 bg-white hover:bg-indigo-600 hover:text-white text-indigo-900 border border-indigo-200 rounded-lg text-[11px] font-bold shadow-2xs transition-all cursor-pointer active:scale-95"
+                >
+                  {t.presetDay16ToEnd}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyPresetFullMonth}
+                  className="px-2.5 py-1 bg-white hover:bg-indigo-600 hover:text-white text-indigo-900 border border-indigo-200 rounded-lg text-[11px] font-bold shadow-2xs transition-all cursor-pointer active:scale-95"
+                >
+                  {t.presetFullMonth}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyPresetThisWeek}
+                  className="px-2.5 py-1 bg-white hover:bg-indigo-600 hover:text-white text-indigo-900 border border-indigo-200 rounded-lg text-[11px] font-bold shadow-2xs transition-all cursor-pointer active:scale-95"
+                >
+                  {t.presetThisWeek}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyPresetToday}
+                  className="px-2.5 py-1 bg-white hover:bg-indigo-600 hover:text-white text-indigo-900 border border-indigo-200 rounded-lg text-[11px] font-bold shadow-2xs transition-all cursor-pointer active:scale-95"
+                >
+                  {t.presetToday}
+                </button>
+              </div>
+            </div>
+
+            {/* Date Pickers & Range Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>{t.fromDate}</span>
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 shadow-2xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>{t.toDate}</span>
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-indigo-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 shadow-2xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                />
+              </div>
+            </div>
+
+            {/* Active Range Preview Bar */}
+            <div className="bg-white/80 backdrop-blur-xs p-2.5 rounded-xl border border-indigo-200/80 flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 font-bold text-indigo-950">
+                <span className="text-indigo-600">{startDate}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-indigo-600">{endDate}</span>
+                <span className="text-slate-500 font-normal hidden sm:inline">({rangeLabel})</span>
+              </div>
+
+              <span className="font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md text-[11px]">
+                {rangeDays.length} {language === 'km' ? 'តារាង (ថ្ងៃ)' : 'Day Tables'}
+              </span>
+            </div>
+
+            {/* Download Range Buttons (Excel & PDF) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={handleExportRangeExcel}
+                disabled={isExportingRangeExcel || rangeDays.length === 0}
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 cursor-pointer"
+              >
+                {isExportingRangeExcel ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="w-4 h-4" />
+                )}
+                <span>{t.downloadRangeExcel} ({rangeDays.length}d)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportRangePDF}
+                disabled={isExportingRangePDF || rangeDays.length === 0}
+                className="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-rose-600/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 cursor-pointer"
+              >
+                {isExportingRangePDF ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4" />
+                )}
+                <span>{t.downloadRangePdf} ({rangeDays.length}d)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Option 2: 1-Week Report (7 Days 7 Tables) */}
+          <div className="p-3.5 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl hover:border-slate-300 transition-all">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-start sm:items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-indigo-600/20">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shrink-0">
                   <CalendarRange className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -142,17 +376,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     </span>
                   </div>
                   <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
-                    {language === 'km' ? 'សប្ដាហ៍ ' : 'Week of '}<strong className="text-indigo-950 font-bold">{currentWeekRangeLabel}</strong> {t.exportWeeklyFeaturedDesc}
+                    {language === 'km' ? 'សប្ដាហ៍ ' : 'Week of '}<strong className="text-indigo-950 font-bold">{currentWeekRangeLabel}</strong>
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-indigo-200/60">
+              <div className="grid grid-cols-2 gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
                 <button
                   onClick={handleExcelExportWeekly}
                   disabled={isExportingWeeklyExcel}
-                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-60 cursor-pointer"
-                  title="Download 1-Week Excel file with 7 separate daily tables"
+                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-60 cursor-pointer"
                 >
                   {isExportingWeeklyExcel ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -165,8 +398,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <button
                   onClick={handleWeeklyPDFExport}
                   disabled={isExportingWeeklyPDF}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-60 cursor-pointer"
-                  title="Download 1-Week PDF with 7 distinct day tables"
+                  className="px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-60 cursor-pointer"
                 >
                   {isExportingWeeklyPDF ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -179,7 +411,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           </div>
 
-          {/* Option 2: Excel (.xlsx) Single Day, Monthly, & All Reports */}
+          {/* Option 3: Excel (.xlsx) Single Day, Monthly Overview, & Master All Logs */}
           <div className="p-3.5 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shrink-0 mt-0.5 sm:mt-0">
@@ -215,7 +447,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           </div>
 
-          {/* Option 3: Single Day PDF Download */}
+          {/* Option 4: Single Day PDF Download */}
           <div className="p-3.5 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold shrink-0 mt-0.5 sm:mt-0">
@@ -250,7 +482,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           </div>
 
-          {/* Option 4: Google Sheets Sync */}
+          {/* Option 5: Google Sheets Sync */}
           <div className="p-3.5 sm:p-4 bg-amber-50/70 border border-amber-200 rounded-xl sm:rounded-2xl flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-start sm:items-center gap-3">

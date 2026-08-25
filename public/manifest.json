@@ -1,11 +1,10 @@
 {
-  "id": "/",
   "short_name": "DailyReport",
   "name": "Daily Report Schedule Tracker",
   "description": "Automated daily schedule checklist and report generator with live sync, auto-holiday detection, and export.",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F46E5'/><path d='M30 30h40v10H30zm0 15h40v10H30zm0 15h25v10H30z' fill='white'/></svg>",
+      "src": "/icon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

@@ -1,0 +1,684 @@
+export type Language = 'en' | 'km';
+
+export interface Translations {
+  // Navigation & Header
+  dailySchedule: string;
+  summaryTable: string;
+  checkCount: string;
+  checkCountTime: string;
+  importSheet: string;
+  googleLogin: string;
+  exportReport: string;
+  templateSchedule: string;
+  settings: string;
+  cloudSync: string;
+  localStorageMode: string;
+  language: string;
+  switchLanguage: string;
+  english: string;
+  khmer: string;
+
+  // Date & Days
+  selectedLogDate: string;
+  todayBadge: string;
+  progress: string;
+  previousDay: string;
+  nextDay: string;
+  sunday: string;
+  monday: string;
+  tuesday: string;
+  wednesday: string;
+  thursday: string;
+  friday: string;
+  saturday: string;
+  sunShort: string;
+  monShort: string;
+  tueShort: string;
+  wedShort: string;
+  thuShort: string;
+  friShort: string;
+  satShort: string;
+
+  // Check-In / Check-Out
+  checkIn: string;
+  checkOut: string;
+  checkedIn: string;
+  checkedOut: string;
+  activeWorkShift: string;
+  checkedInAt: string;
+  currentShiftDuration: string;
+  totalWorkedToday: string;
+  workSessions: string;
+  sessionsLogged: string;
+  noSessionsYet: string;
+  optionalSessionNote: string;
+  confirmCheckOut: string;
+  cancel: string;
+  deleteSession: string;
+  duration: string;
+
+  // Checklist Actions
+  addSlotOt: string;
+  markAllDone: string;
+  resetProgress: string;
+  doneForToday: string;
+  doneForTodayCompleted: string;
+  completedOfSlots: string;
+  doneForTodayHint: string;
+  doneForTodayLoggedOn: string;
+  noTasksToday: string;
+  noTasksHint: string;
+
+  // Add Task Form
+  addTimeSlotTitle: string;
+  scheduleRegular: string;
+  overTimeOt: string;
+  scheduleBadge: string;
+  overtimeBadge: string;
+  timeSlotLabel: string;
+  timeSlotPlaceholder: string;
+  selectActivityOrCustom: string;
+  selectActivityDefault: string;
+  customTaskOption: string;
+  taskTitlePlaceholder: string;
+  notesLabel: string;
+  notesPlaceholder: string;
+  applyToLabel: string;
+  thisDateOnly: string;
+  allWorkingDays: string;
+  selectedDays: string;
+  saveAndAddSlot: string;
+
+  // Quick Preset Durations
+  preset30m: string;
+  preset1h: string;
+  preset1h30m: string;
+  preset2h: string;
+  preset4h: string;
+
+  // Template Modal
+  customizeScheduleTitle: string;
+  customizeScheduleDesc: string;
+  quickRecurrence: string;
+  fiveDaysMonFri: string;
+  everyday7Days: string;
+  oneWeek: string;
+  twoWeeks: string;
+  addTemplateSlot: string;
+  templateSlotsCount: string;
+  scheduleTypeAndDays: string;
+  saveSchedule: string;
+  resetToDefault: string;
+
+  // Day Time Counter Modal
+  timeCounterModalTitle: string;
+  workHoursTitle: string;
+  totalWorkTime: string;
+  regularTime: string;
+  completedTime: string;
+  totalLoggedHours: string;
+  regularHours: string;
+  overtimeHours: string;
+  completedTasks: string;
+  timeSlotBreakdown: string;
+  summaryAnalytics: string;
+  close: string;
+
+  // Export Modal
+  exportModalTitle: string;
+  exportModalSubtitle: string;
+  exportWeeklyFeaturedTitle: string;
+  exportWeeklyFeaturedBadge: string;
+  exportWeeklyFeaturedDesc: string;
+  weekExcelBtn: string;
+  weekPdfBtn: string;
+  excelWorkbooksTitle: string;
+  excelWorkbooksDesc: string;
+  dayBtn: string;
+  monthlyOverviewBtn: string;
+  masterAllLogsBtn: string;
+  singleDayPdfTitle: string;
+  singleDayPdfDesc: string;
+  downloadDayPdfBtn: string;
+  liveGoogleSheetsSyncTitle: string;
+  liveGoogleSheetsSyncDesc: string;
+  syncNowBtn: string;
+
+  // Import Modal
+  importTitle: string;
+  importSubtitle: string;
+  pasteSchedulePlaceholder: string;
+  previewSlots: string;
+  confirmImport: string;
+  importHint: string;
+
+  // Summary Table
+  monthlySummaryTitle: string;
+  totalWorkingDays: string;
+  totalHoursWorked: string;
+  overallCompletion: string;
+  filterByMonth: string;
+  exportTable: string;
+  status: string;
+  actions: string;
+  noReportsFound: string;
+  totalSlots: string;
+  daysTracked: string;
+  activeDays: string;
+  notesLogged: string;
+  holidaysCount: string;
+  searchPlaceholder: string;
+  allDates: string;
+  todayOnly: string;
+  past7Days: string;
+  thisMonth: string;
+  exportMasterExcel: string;
+  tableHeaderDate: string;
+  tableHeaderDay: string;
+  tableHeaderTime: string;
+  tableHeaderTask: string;
+  tableHeaderSchedule: string;
+  tableHeaderNotes: string;
+  noMatchingLogs: string;
+
+  // Settings Modal
+  settingsTitle: string;
+  settingsSubtitle: string;
+  languageSetting: string;
+  companyBranding: string;
+  companyNameLabel: string;
+  employeeInfoSection: string;
+  employeeNameLabel: string;
+  departmentLabel: string;
+  supervisorLabel: string;
+  supervisorNameLabel: string;
+  companyLogoLabel: string;
+  weeklyOffDays: string;
+  weeklyOffDaysDesc: string;
+  googleSheetsSyncEndpoint: string;
+  googleSheetsSyncDesc: string;
+  dataManagement: string;
+  exportJsonBackup: string;
+  restoreJsonBackup: string;
+  resetAllDataTitle: string;
+  resetAllDataDesc: string;
+  resetAllDataButton: string;
+  saveProfile: string;
+  saveSettings: string;
+  syncGoogleSheets: string;
+  googleSheetsWebAppUrl: string;
+
+  // Preset Activity Names
+  presetChatFb: string;
+  presetCheckPlatform: string;
+  presetVideoIdeas: string;
+  presetDesignPoster: string;
+  presetEditVideo: string;
+  presetPostPage: string;
+  presetFindElement: string;
+  presetTakeVideo: string;
+}
+
+export const TRANSLATIONS: Record<Language, Translations> = {
+  en: {
+    // Navigation & Header
+    dailySchedule: 'Daily Schedule',
+    summaryTable: 'Summary Table',
+    checkCount: 'Check Count',
+    checkCountTime: 'Check Count Time',
+    importSheet: 'Import Sheet',
+    googleLogin: 'Google Login',
+    exportReport: 'Export',
+    templateSchedule: 'Template',
+    settings: 'Settings',
+    cloudSync: 'Google Cloud Sync',
+    localStorageMode: 'Local Storage Mode',
+    language: 'Language',
+    switchLanguage: 'Switch to Khmer (ភាសាខ្មែរ)',
+    english: 'English',
+    khmer: 'ភាសាខ្មែរ',
+
+    // Date & Days
+    selectedLogDate: 'Selected Log Date',
+    todayBadge: '★ TODAY',
+    progress: 'Progress',
+    previousDay: 'Previous Day',
+    nextDay: 'Next Day',
+    sunday: 'Sunday',
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+    sunShort: 'Sun',
+    monShort: 'Mon',
+    tueShort: 'Tue',
+    wedShort: 'Wed',
+    thuShort: 'Thu',
+    friShort: 'Fri',
+    satShort: 'Sat',
+
+    // Check-In / Check-Out
+    checkIn: 'Check In',
+    checkOut: 'Check Out',
+    checkedIn: 'Checked In',
+    checkedOut: 'Checked Out',
+    activeWorkShift: 'Active Work Shift',
+    checkedInAt: 'Checked In at',
+    currentShiftDuration: 'Current Shift Duration',
+    totalWorkedToday: 'Total Worked Today',
+    workSessions: 'Work Sessions',
+    sessionsLogged: 'sessions logged',
+    noSessionsYet: 'No work sessions recorded for this day yet.',
+    optionalSessionNote: 'Optional note / summary for this shift...',
+    confirmCheckOut: 'Confirm Check-Out',
+    cancel: 'Cancel',
+    deleteSession: 'Delete Session',
+    duration: 'Duration',
+
+    // Checklist Actions
+    addSlotOt: 'Add Slot (OT)',
+    markAllDone: 'Mark All Complete',
+    resetProgress: 'Reset',
+    doneForToday: 'Done for Today',
+    doneForTodayCompleted: '✓ Done for Today',
+    completedOfSlots: 'completed',
+    doneForTodayHint: 'Click "Done for Today" to finalize and verify your work log',
+    doneForTodayLoggedOn: 'Completed and logged on',
+    noTasksToday: 'No time-slot tasks created for today.',
+    noTasksHint: 'Click "Add Slot (OT)" above to get started.',
+
+    // Add Task Form
+    addTimeSlotTitle: 'Add Time Slot & Task (Regular or Over Time)',
+    scheduleRegular: 'Schedule (Regular)',
+    overTimeOt: '⏰ Over Time (OT)',
+    scheduleBadge: 'Schedule',
+    overtimeBadge: 'Over Time',
+    timeSlotLabel: 'Time Slot',
+    timeSlotPlaceholder: 'e.g. 17:00 - 18:00',
+    selectActivityOrCustom: 'Select Activity or Custom Title',
+    selectActivityDefault: '-- Select Activity --',
+    customTaskOption: '✏️ Custom Task / Activity',
+    taskTitlePlaceholder: 'Task title / description...',
+    notesLabel: 'Take Note / Remarks of what you did:',
+    notesPlaceholder: 'Write note or details of work done (e.g., replied customer chats, exported video...)',
+    applyToLabel: 'Apply To:',
+    thisDateOnly: 'This Date Only',
+    allWorkingDays: 'All Working Days',
+    selectedDays: 'Selected Days',
+    saveAndAddSlot: 'Save & Add Slot',
+
+    // Quick Preset Durations
+    preset30m: '+30m',
+    preset1h: '+1h',
+    preset1h30m: '+1.5h',
+    preset2h: '+2h',
+    preset4h: '+4h',
+
+    // Template Modal
+    customizeScheduleTitle: 'Customize Schedule & Recurrence',
+    customizeScheduleDesc: 'Set templates for 5 days, Everyday (7 days), 1 week, or 2 weeks recurrence.',
+    quickRecurrence: 'Quick Template Recurrence:',
+    fiveDaysMonFri: '5 Days (Mon - Fri)',
+    everyday7Days: 'Everyday (7 Days)',
+    oneWeek: '1 Week',
+    twoWeeks: '2 Weeks',
+    addTemplateSlot: 'Add Template Slot',
+    templateSlotsCount: 'Template Slots & Tasks',
+    scheduleTypeAndDays: 'Schedule Type & Day Assignment',
+    saveSchedule: 'Save Schedule',
+    resetToDefault: 'Reset to Default',
+
+    // Day Time Counter Modal
+    timeCounterModalTitle: 'Daily Work Hours Counter & Analytics',
+    workHoursTitle: 'Daily Work Hours Counter & Analytics',
+    totalWorkTime: 'Total Work Time',
+    regularTime: 'Regular Time',
+    completedTime: 'Completed Time',
+    totalLoggedHours: 'Total Logged Hours',
+    regularHours: 'Regular Hours',
+    overtimeHours: 'Overtime (OT)',
+    completedTasks: 'Completed Tasks',
+    timeSlotBreakdown: 'Time Slot Breakdown',
+    summaryAnalytics: 'Summary & Breakdown',
+    close: 'Close',
+
+    // Export Modal
+    exportModalTitle: 'Export Daily & Weekly Reports',
+    exportModalSubtitle: 'Generate Excel workbooks, multi-day PDF files, or sync with cloud sheets',
+    exportWeeklyFeaturedTitle: '1-Week Report (7 Days 7 Tables)',
+    exportWeeklyFeaturedBadge: 'Recommended',
+    exportWeeklyFeaturedDesc: '(Mon - Sun) containing 7 distinct daily schedule tables, timestamps, notes, and work session hours',
+    weekExcelBtn: '1-Week Excel',
+    weekPdfBtn: '1-Week PDF',
+    excelWorkbooksTitle: 'Excel Workbooks (.xlsx)',
+    excelWorkbooksDesc: 'Professional spreadsheet with time slots, activities, status & timestamps',
+    dayBtn: 'Day',
+    monthlyOverviewBtn: 'Monthly Overview',
+    masterAllLogsBtn: 'Master (All Logs)',
+    singleDayPdfTitle: 'Single Day PDF (.pdf)',
+    singleDayPdfDesc: 'Clean formatted printable PDF document for today\'s log',
+    downloadDayPdfBtn: 'Download Day PDF',
+    liveGoogleSheetsSyncTitle: 'Live Google Sheets Sync',
+    liveGoogleSheetsSyncDesc: 'Send structured row directly into your linked company Google Sheet',
+    syncNowBtn: 'Sync Now',
+
+    // Import Modal
+    importTitle: 'Import Schedule from Spreadsheet',
+    importSubtitle: 'Paste time slots and task names copied from Google Sheets, Excel, or CSV.',
+    pasteSchedulePlaceholder: 'Paste your schedule data here...\nExample:\n08:00 - 09:00\tReply chat customer on Facebook page\n09:00 - 10:00\tCheck platform',
+    previewSlots: 'Preview Slots',
+    confirmImport: 'Confirm & Import Slots',
+    importHint: 'Slots will be added to today\'s schedule.',
+
+    // Summary Table
+    monthlySummaryTitle: 'Monthly Work Report & Summary',
+    totalWorkingDays: 'Total Working Days',
+    totalHoursWorked: 'Total Hours Worked',
+    overallCompletion: 'Overall Completion',
+    filterByMonth: 'Filter Month:',
+    exportTable: 'Export Table',
+    status: 'Status',
+    actions: 'Actions',
+    noReportsFound: 'No reports found for this month.',
+    totalSlots: 'Total Tasks / Slots',
+    daysTracked: 'days logged',
+    activeDays: 'Active Days',
+    notesLogged: 'Notes Logged',
+    holidaysCount: 'Off / Holidays',
+    searchPlaceholder: 'Search by activity, remarks, time, date...',
+    allDates: 'All Dates',
+    todayOnly: 'Today Only',
+    past7Days: 'Past 7 Days',
+    thisMonth: 'This Month',
+    exportMasterExcel: 'Master Excel (.xlsx)',
+    tableHeaderDate: 'Date',
+    tableHeaderDay: 'Day',
+    tableHeaderTime: 'Time Slot',
+    tableHeaderTask: 'Activity / Task',
+    tableHeaderSchedule: 'Schedule / Type',
+    tableHeaderNotes: 'Notes / Remarks',
+    noMatchingLogs: 'No matching log entries found.',
+
+    // Settings Modal
+    settingsTitle: 'Settings & Profile',
+    settingsSubtitle: 'Customize company branding, employee details, off-days, and Google Sheets integration',
+    languageSetting: 'Application Language',
+    companyBranding: 'Company Branding & Logo',
+    companyNameLabel: 'Company / Organization Name',
+    employeeInfoSection: 'Employee Information',
+    employeeNameLabel: 'Employee Name',
+    departmentLabel: 'Department / Position',
+    supervisorLabel: 'Supervisor / Approver Name',
+    supervisorNameLabel: 'Supervisor / Lead Name',
+    companyLogoLabel: 'Company Logo',
+    weeklyOffDays: 'Weekly Off-Days / Holidays',
+    weeklyOffDaysDesc: 'Days marked here will automatically display a Holiday status banner on the daily checklist.',
+    googleSheetsSyncEndpoint: 'Google Sheets Sync Web App URL',
+    googleSheetsSyncDesc: 'Deploy Google Apps Script as a Web App to automatically record daily tasks directly into Google Sheets.',
+    dataManagement: 'Backup & Data Management',
+    exportJsonBackup: 'Export JSON Backup',
+    restoreJsonBackup: 'Restore Backup',
+    resetAllDataTitle: 'Reset All Data (Fresh Start)',
+    resetAllDataDesc: 'Clear all custom tasks, logs, and sessions across all dates back to fresh defaults.',
+    resetAllDataButton: 'Reset Everything to Default',
+    saveProfile: 'Save Settings',
+    saveSettings: 'Save Settings',
+    syncGoogleSheets: 'Google Sheets Automatic Synchronization',
+    googleSheetsWebAppUrl: 'Google Apps Script Web App URL',
+
+    // Preset Activity Names
+    presetChatFb: 'Reply chat customer on Facebook page',
+    presetCheckPlatform: 'Check platform',
+    presetVideoIdeas: 'Find ideas for create video',
+    presetDesignPoster: 'Design poster',
+    presetEditVideo: 'Edit video',
+    presetPostPage: 'Post page',
+    presetFindElement: 'Find element for design',
+    presetTakeVideo: 'Take video',
+  },
+
+  km: {
+    // Navigation & Header
+    dailySchedule: 'កាលវិភាគប្រចាំថ្ងៃ',
+    summaryTable: 'តារាងសង្ខេប',
+    checkCount: 'ពិនិត្យម៉ោង',
+    checkCountTime: 'ពិនិត្យម៉ោងធ្វើការ',
+    importSheet: 'នាំចូលទិន្នន័យ',
+    googleLogin: 'ចូលគណនី Google',
+    exportReport: 'ទាញយករបាយការណ៍',
+    templateSchedule: 'គំរូកាលវិភាគ',
+    settings: 'ការកំណត់',
+    cloudSync: 'Google Cloud Sync',
+    localStorageMode: 'របៀបរក្សាទុកលើម៉ាស៊ីន',
+    language: 'ភាសា',
+    switchLanguage: 'Switch to English',
+    english: 'English',
+    khmer: 'ភាសាខ្មែរ',
+
+    // Date & Days
+    selectedLogDate: 'កាលបរិច្ឆេទដែលបានជ្រើសរើស',
+    todayBadge: '★ ថ្ងៃនេះ',
+    progress: 'វឌ្ឍនភាពការងារ',
+    previousDay: 'ថ្ងៃមុន',
+    nextDay: 'ថ្ងៃបន្ទាប់',
+    sunday: 'អាទិត្យ',
+    monday: 'ច័ន្ទ',
+    tuesday: 'អង្គារ',
+    wednesday: 'ពុធ',
+    thursday: 'ព្រហស្បតិ៍',
+    friday: 'សុក្រ',
+    saturday: 'សៅរ៍',
+    sunShort: 'អា',
+    monShort: 'ច',
+    tueShort: 'អ',
+    wedShort: 'ព',
+    thuShort: 'ព្រ',
+    friShort: 'សុ',
+    satShort: 'ស',
+
+    // Check-In / Check-Out
+    checkIn: 'ចុះឈ្មោះចូល (Check-In)',
+    checkOut: 'ចុះឈ្មោះចេញ (Check-Out)',
+    checkedIn: 'បានចូលធ្វើការ',
+    checkedOut: 'បានចេញពីធ្វើការ',
+    activeWorkShift: 'កំពុងបំពេញការងារ (Active Shift)',
+    checkedInAt: 'បានចូលធ្វើការនៅម៉ោង',
+    currentShiftDuration: 'រយៈពេលបំពេញការងារបច្ចុប្បន្ន',
+    totalWorkedToday: 'ម៉ោងធ្វើការសរុបថ្ងៃនេះ',
+    workSessions: 'ប្រវត្តិវេនការងារ (Work Sessions)',
+    sessionsLogged: 'វេនការងារបានកត់ត្រា',
+    noSessionsYet: 'មិនទាន់មានការកត់ត្រាម៉ោងចូល/ចេញសម្រាប់ថ្ងៃនេះនៅឡើយទេ។',
+    optionalSessionNote: 'កំណត់សម្គាល់បន្ថែម ឬសេចក្តីសង្ខេបវេនការងារនេះ...',
+    confirmCheckOut: 'បញ្ជាក់ការចុះឈ្មោះចេញ',
+    cancel: 'បោះបង់',
+    deleteSession: 'លុបវេនការងារ',
+    duration: 'រយៈពេល',
+
+    // Checklist Actions
+    addSlotOt: 'បន្ថែមម៉ោង/OT',
+    markAllDone: 'សម្គាល់រួចរាល់ទាំងអស់',
+    resetProgress: 'កំណត់ឡើងវិញ',
+    doneForToday: 'បញ្ចប់ការងារថ្ងៃនេះ',
+    doneForTodayCompleted: '✓ បានបញ្ចប់ការងារថ្ងៃនេះ',
+    completedOfSlots: 'បានរួចរាល់',
+    doneForTodayHint: 'ចុច «បញ្ចប់ការងារថ្ងៃនេះ» ដើម្បីបញ្ជាក់ និងកត់ត្រារបាយការណ៍ការងាររបស់អ្នក',
+    doneForTodayLoggedOn: 'បានបញ្ចប់ និងកត់ត្រានៅ',
+    noTasksToday: 'មិនទាន់មានការងារក្នុងចន្លោះពេលសម្រាប់ថ្ងៃនេះនៅឡើយទេ។',
+    noTasksHint: 'ចុច «បន្ថែមម៉ោង/OT» ខាងលើដើម្បីចាប់ផ្ដើម។',
+
+    // Add Task Form
+    addTimeSlotTitle: 'បន្ថែមចន្លោះពេល និងភារកិច្ច (ម៉ោងធម្មតា ឬ ថែមម៉ោង)',
+    scheduleRegular: 'កាលវិភាគធម្មតា (Regular)',
+    overTimeOt: '⏰ ថែមម៉ោង (OT)',
+    scheduleBadge: 'កាលវិភាគ',
+    overtimeBadge: 'ថែមម៉ោង',
+    timeSlotLabel: 'ចន្លោះពេល',
+    timeSlotPlaceholder: 'ឧទាហរណ៍ 17:00 - 18:00',
+    selectActivityOrCustom: 'ជ្រើសរើសសកម្មភាព ឬបញ្ចូលចំណងជើងផ្ទាល់ខ្លួន',
+    selectActivityDefault: '-- ជ្រើសរើសសកម្មភាព --',
+    customTaskOption: '✏️ ការងារផ្ទាល់ខ្លួន / ផ្សេងៗ',
+    taskTitlePlaceholder: 'ឈ្មោះការងារ / ការពិពណ៌នា...',
+    notesLabel: 'កត់ត្រាការងារដែលបានធ្វើរួច៖',
+    notesPlaceholder: 'សរសេរកំណត់ចំណាំ ឬព័ត៌មានលម្អិតការងារ (ឧ. ឆ្លើយតបសារភ្ញៀវ, កាត់តវីដេអូរួច...)',
+    applyToLabel: 'អនុវត្តចំពោះ៖',
+    thisDateOnly: 'តែថ្ងៃនេះប៉ុណ្ណោះ',
+    allWorkingDays: 'គ្រប់ថ្ងៃធ្វើការទាំងអស់',
+    selectedDays: 'ថ្ងៃដែលបានជ្រើសរើស',
+    saveAndAddSlot: 'រក្សាទុក និងបន្ថែមចន្លោះពេល',
+
+    // Quick Preset Durations
+    preset30m: '+៣០នាទី',
+    preset1h: '+១ម៉ោង',
+    preset1h30m: '+១.៥ម៉ោង',
+    preset2h: '+២ម៉ោង',
+    preset4h: '+៤ម៉ោង',
+
+    // Template Modal
+    customizeScheduleTitle: 'កំណត់គំរូកាលវិភាគ និងភាពដដែលៗ',
+    customizeScheduleDesc: 'កំណត់គំរូសម្រាប់ ៥ថ្ងៃ (ច័ន្ទ-សុក្រ), រៀងរាល់ថ្ងៃ (៧ថ្ងៃ), ១សប្តាហ៍ ឬ ២សប្តាហ៍។',
+    quickRecurrence: 'កំណត់គំរូឆាប់រហ័ស៖',
+    fiveDaysMonFri: '៥ ថ្ងៃ (ច័ន្ទ - សុក្រ)',
+    everyday7Days: 'រៀងរាល់ថ្ងៃ (៧ ថ្ងៃ)',
+    oneWeek: '១ សប្តាហ៍',
+    twoWeeks: '២ សប្តាហ៍',
+    addTemplateSlot: 'បន្ថែមចន្លោះពេលគំរូ',
+    templateSlotsCount: 'ចន្លោះពេល និងការងារគំរូ',
+    scheduleTypeAndDays: 'ប្រភេទកាលវិភាគ និងការកំណត់ថ្ងៃ',
+    saveSchedule: 'រក្សាទុកកាលវិភាគ',
+    resetToDefault: 'កំណត់ឡើងវិញដូចដើម',
+
+    // Day Time Counter Modal
+    timeCounterModalTitle: 'ផ្ទាំងគណនាម៉ោងធ្វើការ និងស្ថិតិប្រចាំថ្ងៃ',
+    workHoursTitle: 'ផ្ទាំងគណនាម៉ោងធ្វើការ និងស្ថិតិប្រចាំថ្ងៃ',
+    totalWorkTime: 'ម៉ោងធ្វើការសរុប',
+    regularTime: 'ម៉ោងធម្មតា',
+    completedTime: 'ម៉ោងបានបញ្ចប់',
+    totalLoggedHours: 'ម៉ោងធ្វើការសរុប',
+    regularHours: 'ម៉ោងធម្មតា',
+    overtimeHours: 'ថែមម៉ោង (OT)',
+    completedTasks: 'ការងារបានសម្រេច',
+    timeSlotBreakdown: 'ការវិភាគតាមចន្លោះពេល',
+    summaryAnalytics: 'សង្ខេប និងការវិភាគ',
+    close: 'បិទ',
+
+    // Export Modal
+    exportModalTitle: 'ទាញយករបាយការណ៍ប្រចាំថ្ងៃ និងសប្តាហ៍',
+    exportModalSubtitle: 'ទាញយកជាឯកសារ Excel, PDF ឬ ធ្វើសមកាលកម្មជាមួយ Google Sheets',
+    exportWeeklyFeaturedTitle: 'របាយការណ៍ ១សប្តាហ៍ (៧ថ្ងៃ ៧តារាងដាច់ដោយឡែក)',
+    exportWeeklyFeaturedBadge: 'ណែនាំ',
+    exportWeeklyFeaturedDesc: '(ច័ន្ទ - អាទិត្យ) មានតារាង ៧ថ្ងៃដាច់ដោយឡែក រួមទាំងម៉ោង និងកំណត់ចំណាំលម្អិត',
+    weekExcelBtn: 'Excel ១សប្តាហ៍',
+    weekPdfBtn: 'PDF ១សប្តាហ៍',
+    excelWorkbooksTitle: 'សៀវភៅការងារ Excel (.xlsx)',
+    excelWorkbooksDesc: 'ទាញយកជាឯកសារ Excel មានតារាងចន្លោះពេល ភារកិច្ច និងកំណត់ចំណាំ',
+    dayBtn: 'ថ្ងៃនេះ',
+    monthlyOverviewBtn: 'សង្ខេបប្រចាំខែ',
+    masterAllLogsBtn: 'ប្រវត្តិទាំងអស់',
+    singleDayPdfTitle: 'ឯកសារ PDF ប្រចាំថ្ងៃ (.pdf)',
+    singleDayPdfDesc: 'ឯកសារ PDF សម្រាប់បោះពុម្ព ឬរក្សាទុករបាយការណ៍ថ្ងៃនេះ',
+    downloadDayPdfBtn: 'ទាញយក PDF ថ្ងៃនេះ',
+    liveGoogleSheetsSyncTitle: 'ធ្វើសមកាលកម្ម Google Sheets ផ្ទាល់',
+    liveGoogleSheetsSyncDesc: 'ផ្ញើទិន្នន័យដោយផ្ទាល់ទៅកាន់ Google Sheets របស់ក្រុមហ៊ុនអ្នក',
+    syncNowBtn: 'Sync ឥឡូវនេះ',
+
+    // Import Modal
+    importTitle: 'នាំចូលកាលវិភាគពី Spreadsheet',
+    importSubtitle: 'បិទភ្ជាប់ (Paste) ទិន្នន័យចន្លោះពេល និងឈ្មោះការងារពី Google Sheets, Excel ឬ CSV។',
+    pasteSchedulePlaceholder: 'បិទភ្ជាប់ទិន្នន័យកាលវិភាគនៅទីនេះ...\nឧទាហរណ៍៖\n08:00 - 09:00\tReply chat customer on Facebook page\n09:00 - 10:00\tCheck platform',
+    previewSlots: 'មើលទិន្នន័យជាមុន',
+    confirmImport: 'បញ្ជាក់ និងនាំចូលចន្លោះពេល',
+    importHint: 'ចន្លោះពេលនឹងត្រូវបានបន្ថែមទៅកាលវិភាគថ្ងៃនេះ។',
+
+    // Summary Table
+    monthlySummaryTitle: 'របាយការណ៍ និងតារាងសង្ខេបការងារប្រចាំខែ',
+    totalWorkingDays: 'ថ្ងៃធ្វើការសរុប',
+    totalHoursWorked: 'ម៉ោងធ្វើការសរុប',
+    overallCompletion: 'អត្រាសម្រេចសរុប',
+    filterByMonth: 'ជ្រើសរើសខែ៖',
+    exportTable: 'ទាញយកតារាង',
+    status: 'ស្ថានភាព',
+    actions: 'សកម្មភាព',
+    noReportsFound: 'មិនមានរបាយការណ៍សម្រាប់ខែនេះទេ។',
+    totalSlots: 'ចំនួនការងារ/ចន្លោះម៉ោងសរុប',
+    daysTracked: 'ថ្ងៃបានកត់ត្រា',
+    activeDays: 'ថ្ងៃធ្វើការសរុប',
+    notesLogged: 'កំណត់សម្គាល់កត់ត្រា',
+    holidaysCount: 'ថ្ងៃឈប់សម្រាក',
+    searchPlaceholder: 'ស្វែងរកតាមឈ្មោះការងារ, កំណត់ចំណាំ, ម៉ោង, ថ្ងៃ...',
+    allDates: 'កាលបរិច្ឆេទទាំងអស់',
+    todayOnly: 'តែថ្ងៃនេះប៉ុណ្ណោះ',
+    past7Days: '៧ថ្ងៃចុងក្រោយ',
+    thisMonth: 'ខែនេះ',
+    exportMasterExcel: 'Master Excel (.xlsx)',
+    tableHeaderDate: 'កាលបរិច្ឆេទ',
+    tableHeaderDay: 'ថ្ងៃ',
+    tableHeaderTime: 'ចន្លោះពេល',
+    tableHeaderTask: 'សកម្មភាព / ភារកិច្ច',
+    tableHeaderSchedule: 'កាលវិភាគ / ប្រភេទ',
+    tableHeaderNotes: 'កំណត់ចំណាំការងារ',
+    noMatchingLogs: 'មិនមានទិន្នន័យត្រូវគ្នានឹងការស្វែងរកទេ។',
+
+    // Settings Modal
+    settingsTitle: 'ការកំណត់ និងព័ត៌មានបុគ្គលិក',
+    settingsSubtitle: 'កំណត់ឈ្មោះក្រុមហ៊ុន, ព័ត៌មានបុគ្គលិក, ថ្ងៃឈប់សម្រាក និង Google Sheets',
+    languageSetting: 'ភាសាកម្មវិធី',
+    companyBranding: 'ព័ត៌មានក្រុមហ៊ុន និងរូបសញ្ញា (Logo)',
+    companyNameLabel: 'ឈ្មោះក្រុមហ៊ុន / ស្ថាប័ន',
+    employeeInfoSection: 'ព័ត៌មានបុគ្គលិក',
+    employeeNameLabel: 'ឈ្មោះបុគ្គលិក',
+    departmentLabel: 'ផ្នែក / តួនាទី',
+    supervisorLabel: 'ឈ្មោះប្រធានគ្រប់គ្រង',
+    supervisorNameLabel: 'ឈ្មោះប្រធានគ្រប់គ្រង / Lead',
+    companyLogoLabel: 'រូបសញ្ញាក្រុមហ៊ុន (Logo)',
+    weeklyOffDays: 'ថ្ងៃឈប់សម្រាកប្រចាំសប្តាហ៍',
+    weeklyOffDaysDesc: 'ថ្ងៃដែលបានជ្រើសរើសនឹងបង្ហាញជាថ្ងៃឈប់សម្រាកដោយស្វ័យប្រវត្តិ។',
+    googleSheetsSyncEndpoint: 'តំណភ្ជាប់ Google Sheets Web App',
+    googleSheetsSyncDesc: 'ប្រើប្រាស់ Google Apps Script ដើម្បីបញ្ជូនទិន្នន័យទៅកាន់ Google Sheets ដោយស្វ័យប្រវត្តិ។',
+    dataManagement: 'ការគ្រប់គ្រង និងបម្រុងទុកទិន្នន័យ',
+    exportJsonBackup: 'ទាញយកឯកសារបម្រុងទុក (JSON)',
+    restoreJsonBackup: 'ស្ដារទិន្នន័យឡើងវិញ',
+    resetAllDataTitle: 'សម្អាត និងកំណត់ទិន្នន័យឡើងវិញទាំងអស់',
+    resetAllDataDesc: 'លុបទិន្នន័យ និងកំណត់ត្រាការងារទាំងអស់ ដើម្បីចាប់ផ្ដើមជាថ្មីឡើងវិញ។',
+    resetAllDataButton: 'កំណត់ឡើងវិញដូចដើមទាំងអស់',
+    saveProfile: 'រក្សាទុកការកំណត់',
+    saveSettings: 'រក្សាទុកការកំណត់',
+    syncGoogleSheets: 'ធ្វើសមកាលកម្មស្វ័យប្រវត្តិជាមួយ Google Sheets',
+    googleSheetsWebAppUrl: 'Google Apps Script Web App URL',
+
+    // Preset Activity Names
+    presetChatFb: 'ឆ្លើយតបសារអតិថិជនលើផេក Facebook',
+    presetCheckPlatform: 'ពិនិត្យមើលគ្រប់ Platform',
+    presetVideoIdeas: 'ស្វែងរកគំនិតបង្កើតវីដេអូ',
+    presetDesignPoster: 'ឌីហ្សាញ Poster',
+    presetEditVideo: 'កាត់តវីដេអូ',
+    presetPostPage: 'ផុសលើផេក Facebook/TikTok',
+    presetFindElement: 'ស្វែងរក Element សម្រាប់ Design',
+    presetTakeVideo: 'ថតវីដេអូ',
+  },
+};
+
+export const KHMER_MONTHS = [
+  'មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា',
+  'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'
+];
+
+export const KHMER_DAYS = [
+  'អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'
+];
+
+export const KHMER_DAYS_SHORT = ['អា', 'ច', 'អ', 'ព', 'ព្រ', 'សុ', 'ស'];
+
+export function formatKhmerDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const year = parts[0];
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const dateObj = new Date(parseInt(year, 10), monthIdx, day);
+  const dayName = KHMER_DAYS[dateObj.getDay()] || '';
+  const monthName = KHMER_MONTHS[monthIdx] || '';
+  return `ថ្ងៃ${dayName} ទី${day} ខែ${monthName} ឆ្នាំ${year}`;
+}

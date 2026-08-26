@@ -248,7 +248,7 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({
 
           {/* Quick Direct Excel Download */}
           <button
-            onClick={() => exportAllReportsToExcel(reports, userProfile)}
+            onClick={() => exportAllReportsToExcel(reports, userProfile, language)}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
             title="Download complete Master Multi-Tab Excel (.xlsx) file"
           >

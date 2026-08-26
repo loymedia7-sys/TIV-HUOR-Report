@@ -27,7 +27,8 @@ function escapeHtml(str: string | undefined | null): string {
  */
 function generateDayTableHtml(report: DayReport, language: Language = 'en'): string {
   const isPermission = Boolean(report.isPermission);
-  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission;
+  const isHoliday = Boolean(report.isHoliday);
+  const isAbsentNoPermission = !isHoliday && !report.isCheckedIn && !report.isPermission;
 
   // Banner text in Khmer or English
   let bannerText = '';
@@ -35,6 +36,8 @@ function generateDayTableHtml(report: DayReport, language: Language = 'en'): str
     const khmerDate = formatKhmerDate(report.date);
     if (isPermission) {
       bannerText = `${khmerDate} (ច្បាប់ឈប់សម្រាក - Permission)`;
+    } else if (isHoliday) {
+      bannerText = `${khmerDate} (ថ្ងៃឈប់សម្រាក - Holiday)`;
     } else if (isAbsentNoPermission) {
       bannerText = `${khmerDate} (អវត្តមានឥតច្បាប់ - Absent)`;
     } else {
@@ -44,6 +47,8 @@ function generateDayTableHtml(report: DayReport, language: Language = 'en'): str
     bannerText = formatDateToScreenshotBanner(report.date);
     if (isPermission) {
       bannerText += ' (Permission / Leave)';
+    } else if (isHoliday) {
+      bannerText += ' (Holiday / Weekly Off)';
     } else if (isAbsentNoPermission) {
       bannerText += ' (Absent - No Permission)';
     }
@@ -70,7 +75,34 @@ function generateDayTableHtml(report: DayReport, language: Language = 'en'): str
 
   let rowsHtml = '';
 
-  if (isPermission) {
+  if (isHoliday) {
+    const holidayText = escapeHtml(report.holidayReason || (language === 'km' ? 'ថ្ងៃឈប់សម្រាក' : 'Holiday / Weekly Off'));
+    const notes = escapeHtml(report.notes || (language === 'km' ? 'ថ្ងៃឈប់សម្រាក' : 'Day Off'));
+
+    rowsHtml += `
+      <tr style="background-color: #dcfce7; color: #166534; font-weight: bold; font-size: 11px; height: 26px; line-height: 1.15;">
+        <td style="border: 1px solid #000; text-align: center; vertical-align: middle; padding: 1px 2px 7px 2px;">1</td>
+        <td style="border: 1px solid #000; text-align: center; vertical-align: middle; padding: 1px 2px 7px 2px;">HOLIDAY</td>
+        <td style="border: 1px solid #000; text-align: left; vertical-align: middle; padding: 1px 8px 7px 8px;">${holidayText}</td>
+        <td style="border: 1px solid #000; text-align: center; vertical-align: middle; padding: 1px 2px 7px 2px; color: #16a34a; font-size: 14px; font-weight: bold;"><span style="display: inline-block; vertical-align: middle; line-height: 1;">✓</span></td>
+        <td style="border: 1px solid #000; text-align: left; vertical-align: middle; padding: 1px 6px 7px 6px;">${language === 'km' ? 'ថ្ងៃឈប់សម្រាក' : 'Day Off'}</td>
+        <td style="border: 1px solid #000; text-align: left; vertical-align: middle; padding: 1px 6px 7px 6px;">${notes}</td>
+      </tr>
+    `;
+
+    for (let i = 2; i <= 6; i++) {
+      rowsHtml += `
+        <tr style="height: 25px; font-size: 11px; line-height: 1.15;">
+          <td style="border: 1px solid #000; text-align: center; vertical-align: middle; color: #64748b; padding: 1px 2px 7px 2px;">${i}</td>
+          <td style="border: 1px solid #000; vertical-align: middle;"></td>
+          <td style="border: 1px solid #000; vertical-align: middle;"></td>
+          <td style="border: 1px solid #000; vertical-align: middle;"></td>
+          <td style="border: 1px solid #000; vertical-align: middle;"></td>
+          <td style="border: 1px solid #000; vertical-align: middle;"></td>
+        </tr>
+      `;
+    }
+  } else if (isPermission) {
     const reasonText = report.permissionReason
       ? `(${escapeHtml(report.permissionReason)})`
       : (language === 'km' ? '(សុំច្បាប់ឈប់សម្រាក / មិនស្រួលខ្លួន)' : '(sick can go need to rest and sleep)');
@@ -230,9 +262,9 @@ function generateDayTableHtml(report: DayReport, language: Language = 'en'): str
     }
   }
 
-  // Banner background color: Red for Permission / Absent, Yellow for Regular
-  const bannerBg = isPermission || isAbsentNoPermission ? '#ef4444' : '#fef08a';
-  const bannerColor = isPermission || isAbsentNoPermission ? '#ffffff' : '#000000';
+  // Banner background color: Red for Permission / Absent, Green for Holiday, Yellow for Regular
+  const bannerBg = isPermission || isAbsentNoPermission ? '#ef4444' : isHoliday ? '#22c55e' : '#fef08a';
+  const bannerColor = isPermission || isAbsentNoPermission || isHoliday ? '#ffffff' : '#000000';
 
   return `
     <div style="margin-bottom: 22px; break-inside: avoid; page-break-inside: avoid;">

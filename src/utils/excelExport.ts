@@ -37,7 +37,8 @@ export function renderDayTableToWorksheet(
   const lang: Language = language === 'km' ? 'km' : 'en';
   let currentRow = startRowNum;
   const isPermission = Boolean(report.isPermission);
-  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission;
+  const isHoliday = Boolean(report.isHoliday);
+  const isAbsentNoPermission = !isHoliday && !report.isCheckedIn && !report.isPermission;
 
   // Banner text in Khmer or English
   let bannerTitle = '';
@@ -45,6 +46,8 @@ export function renderDayTableToWorksheet(
     const khmerDate = formatKhmerDate(report.date);
     if (isPermission) {
       bannerTitle = `${khmerDate} (ច្បាប់ឈប់សម្រាក - Permission)`;
+    } else if (isHoliday) {
+      bannerTitle = `${khmerDate} (ថ្ងៃឈប់សម្រាក - Holiday)`;
     } else if (isAbsentNoPermission) {
       bannerTitle = `${khmerDate} (អវត្តមានឥតច្បាប់ - Absent)`;
     } else {
@@ -54,6 +57,8 @@ export function renderDayTableToWorksheet(
     bannerTitle = formatDateToScreenshotBanner(report.date);
     if (isPermission) {
       bannerTitle += ' (Permission / Leave)';
+    } else if (isHoliday) {
+      bannerTitle += ' (Holiday / Weekly Off)';
     } else if (isAbsentNoPermission) {
       bannerTitle += ' (Absent - No Permission)';
     }
@@ -63,12 +68,12 @@ export function renderDayTableToWorksheet(
   worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
   const bannerCell = worksheet.getCell(`A${currentRow}`);
   bannerCell.value = bannerTitle;
-  bannerCell.font = { name: KHMER_FONT_NAME, size: 13, bold: true, color: { argb: (isPermission || isAbsentNoPermission) ? 'FFFFFFFF' : 'FF000000' } };
+  bannerCell.font = { name: KHMER_FONT_NAME, size: 13, bold: true, color: { argb: (isPermission || isAbsentNoPermission || isHoliday) ? 'FFFFFFFF' : 'FF000000' } };
   bannerCell.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
   bannerCell.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: (isPermission || isAbsentNoPermission) ? 'FFDC2626' : 'FFFFFF00' } // Bright Red for Permission/Absent, Bright Yellow for Regular
+    fgColor: { argb: isPermission ? 'FFDC2626' : isAbsentNoPermission ? 'FFDC2626' : isHoliday ? 'FF16A34A' : 'FFFFFF00' } // Red for Permission/Absent, Green for Holiday, Yellow for Regular
   };
   
   // Apply borders to banner row
@@ -98,7 +103,51 @@ export function renderDayTableToWorksheet(
   });
   currentRow++;
 
-  // 3. IF PERMISSION / SICK LEAVE DAY
+  // 3. IF HOLIDAY DAY
+  if (isHoliday) {
+    const holidayRow = worksheet.getRow(currentRow);
+    holidayRow.height = 25;
+
+    const holidayText = report.holidayReason || (lang === 'km' ? 'ថ្ងៃឈប់សម្រាក' : 'Holiday / Weekly Off');
+    holidayRow.getCell(1).value = 1;
+    holidayRow.getCell(2).value = 'HOLIDAY';
+    holidayRow.getCell(3).value = holidayText;
+    holidayRow.getCell(4).value = '✓';
+    holidayRow.getCell(5).value = lang === 'km' ? 'ថ្ងៃឈប់សម្រាក' : 'Day Off';
+    holidayRow.getCell(6).value = report.notes || '';
+
+    for (let c = 1; c <= 6; c++) {
+      const cell = holidayRow.getCell(c);
+      cell.border = THIN_BLACK_BORDER;
+      cell.font = { name: KHMER_FONT_NAME, size: 11, bold: true, color: { argb: 'FF166534' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFDCFCE7' }
+      };
+      cell.alignment = {
+        horizontal: c === 1 || c === 2 || c === 4 ? 'center' : 'left',
+        vertical: 'middle'
+      };
+    }
+    holidayRow.getCell(4).font = { name: KHMER_FONT_NAME, size: 13, bold: true, color: { argb: 'FF16A34A' } };
+    currentRow++;
+
+    for (let i = 2; i <= 6; i++) {
+      const blankRow = worksheet.getRow(currentRow);
+      blankRow.height = 22;
+      blankRow.getCell(1).value = i;
+      blankRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+      blankRow.getCell(1).font = { name: KHMER_FONT_NAME, size: 10, color: { argb: 'FF64748B' } };
+      for (let c = 1; c <= 6; c++) {
+        blankRow.getCell(c).border = THIN_BLACK_BORDER;
+      }
+      currentRow++;
+    }
+    return currentRow + 1;
+  }
+
+  // 4. IF PERMISSION / SICK LEAVE DAY
   if (isPermission) {
     const permRow = worksheet.getRow(currentRow);
     permRow.height = 25;
@@ -147,7 +196,7 @@ export function renderDayTableToWorksheet(
     return currentRow + 1;
   }
 
-  // 4. IF ABSENT WITHOUT PERMISSION
+  // 5. IF ABSENT WITHOUT PERMISSION
   if (isAbsentNoPermission) {
     const absentRow = worksheet.getRow(currentRow);
     absentRow.height = 25;

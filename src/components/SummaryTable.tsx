@@ -88,7 +88,7 @@ export const SummaryTable: React.FC<SummaryTableProps> = ({
           scheduleType: 'Permission',
           notes: rep.notes || (language === 'km' ? 'បានអនុញ្ញាតច្បាប់ (✓)' : 'Approved Leave (✓)')
         });
-      } else if (!rep.isCheckedIn && (!rep.tasks || rep.tasks.length === 0)) {
+      } else if (!rep.isCheckedIn && !rep.isPermission) {
         list.push({
           id: `${dateKey}_absent`,
           date: dateKey,

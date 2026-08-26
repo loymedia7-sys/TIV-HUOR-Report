@@ -37,7 +37,7 @@ export function renderDayTableToWorksheet(
   const lang: Language = language === 'km' ? 'km' : 'en';
   let currentRow = startRowNum;
   const isPermission = Boolean(report.isPermission);
-  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission && (!report.tasks || report.tasks.length === 0);
+  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission;
 
   // Banner text in Khmer or English
   let bannerTitle = '';

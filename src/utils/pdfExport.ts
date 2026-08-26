@@ -27,7 +27,7 @@ function escapeHtml(str: string | undefined | null): string {
  */
 function generateDayTableHtml(report: DayReport, language: Language = 'en'): string {
   const isPermission = Boolean(report.isPermission);
-  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission && (!report.tasks || report.tasks.length === 0);
+  const isAbsentNoPermission = !report.isCheckedIn && !report.isPermission;
 
   // Banner text in Khmer or English
   let bannerText = '';
